@@ -176,6 +176,19 @@
                                         </select>
                                     </div>
                                     <div class="col-md-6 mb-3">
+                                        <label for="puesto" class="form-label text-white"><i class="fa-solid fa-briefcase me-1 text-info"></i> Puesto <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="puesto" required>
+                                            <option value="" selected disabled>Selecciona tu puesto...</option>
+                                            <option value="OET">OET (Operador de Equipo Tecnológico)</option>
+                                            <option value="AAC">AAC (Auxiliar de Atención Ciudadana)</option>
+                                            <option value="DMI">DMI (Digitalizador de Medios de Identificación)</option>
+                                            <option value="RM">RM (Responsable de Módulo)</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-12 mb-3">
                                         <label for="modulo" class="form-label text-white"><i class="fa-solid fa-id-card me-1 text-info"></i> No. de Módulo / Distrito <span class="text-danger">*</span></label>
                                         <input type="text" class="form-control" id="modulo" required placeholder="Ej. Módulo 03 / Dist. 03 Monclova">
                                     </div>
@@ -184,7 +197,7 @@
                                 <div class="mb-3">
                                     <label for="telefono" class="form-label text-white"><i class="fa-brands fa-whatsapp me-1 text-success"></i> Teléfono / WhatsApp (10 dígitos) <span class="text-danger">*</span></label>
                                     <input type="tel" class="form-control" id="telefono" required placeholder="Ej. 8661234567" pattern="[0-9]{10}">
-                                    <div class="form-text text-light opacity-75 small">Número único a 10 dígitos (el sistema validará si ya estás registrado).</div>
+                                    <div class="form-text text-light opacity-75 small">Si te vuelves a registrar con este número, tu información se actualizará automáticamente.</div>
                                 </div>
 
                                 <div class="mb-4">
@@ -267,6 +280,7 @@
                                 <select class="form-select form-select-sm" id="filtroRol">
                                     <option value="todos">Todos los registros</option>
                                     <option value="representantes">Solo Representantes</option>
+                                    <option value="duplicados">Registrados > 1 vez</option>
                                 </select>
                             </div>
                             <div class="col-md-3 text-md-end mt-4">
@@ -291,7 +305,7 @@
     <!-- Firebase SDK v9 modular (CDN) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, setDoc, doc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
         // Configuración Firebase
         const firebaseConfig = {
@@ -307,6 +321,18 @@
         const db = getFirestore(app);
 
         let listaContactos = [];
+
+        // Cargar contador total al abrir la página (sin necesidad de meter contraseña)
+        async function actualizarContadorGlobal() {
+            try {
+                const q = query(collection(db, "registros_mac_9n"));
+                const querySnapshot = await getDocs(q);
+                document.getElementById('total-badge').innerText = querySnapshot.size;
+            } catch (error) {
+                console.error("Error al cargar contador:", error);
+            }
+        }
+        window.addEventListener('DOMContentLoaded', actualizarContadorGlobal);
 
         // Compresión inteligente de imagen (clara y no pesada)
         function comprimirImagen(file, maxWidth = 350, quality = 0.75) {
@@ -338,72 +364,80 @@
             });
         }
 
-        // Cargar registros para validación previa
-        async function obtenerRegistrosActuales() {
-            try {
-                const q = query(collection(db, "registros_mac_9n"));
-                const querySnapshot = await getDocs(q);
-                const regs = [];
-                querySnapshot.forEach((doc) => {
-                    regs.push(doc.data());
-                });
-                return regs;
-            } catch (error) {
-                console.error("Error al verificar duplicados:", error);
-                return [];
-            }
-        }
-
-        // Manejo del Formulario con Validación Estricta
+        // Manejo del Formulario con actualización automática si ya existe el teléfono
         const registroForm = document.getElementById('registroForm');
         registroForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const nombre = document.getElementById('nombre').value.trim();
             const estado = document.getElementById('estado').value;
+            const puesto = document.getElementById('puesto').value;
             const modulo = document.getElementById('modulo').value.trim();
             const telefono = document.getElementById('telefono').value.trim();
             const esRepresentante = document.getElementById('esRepresentante').checked;
             const acuerdo9N = document.getElementById('acuerdo9N').checked;
             const fotoFile = document.getElementById('foto').files[0];
 
-            // Validar que absolutamente todo esté contestado
-            if (!nombre || !estado || !modulo || !telefono || !fotoFile || !acuerdo9N) {
-                alert("⚠️ Por favor completa todas las preguntas obligatorias, sube tu fotografía y acepta los términos del Paro 9N.");
+            if (!nombre || !estado || !puesto || !modulo || !telefono || !fotoFile || !acuerdo9N) {
+                alert("⚠️ Por favor completa todas las preguntas obligatorias, selecciona tu puesto, sube tu fotografía y acepta los términos del Paro 9N.");
                 return;
             }
 
             const btnSubmit = document.getElementById('btnSubmit');
             btnSubmit.disabled = true;
-            btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Verificando registro...`;
+            btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Procesando registro...`;
 
             try {
-                const registrosExistentes = await obtenerRegistrosActuales();
-                const telefonoRepetido = registrosExistentes.some(r => r.telefono === telefono);
-
-                if (telefonoRepetido) {
-                    alert("⚠️ Este número de teléfono ya se encuentra registrado en el sistema. La persona ya está registrada.");
-                    btnSubmit.disabled = false;
-                    btnSubmit.innerHTML = `<i class="fa-solid fa-paper-plane me-2"></i> Enviar Cuestionario y Registrarme`;
-                    return;
-                }
-
-                btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Optimizando foto y guardando...`;
                 const fotoBase64 = await comprimirImagen(fotoFile);
 
-                await addDoc(collection(db, "registros_mac_9n"), {
-                    nombre,
-                    estado,
-                    modulo,
-                    telefono,
-                    esRepresentante,
-                    acuerdo9N,
-                    foto: fotoBase64,
-                    fecha: serverTimestamp()
+                const q = query(collection(db, "registros_mac_9n"));
+                const querySnapshot = await getDocs(q);
+                let docExistenteId = null;
+                let vecesActuales = 0;
+
+                querySnapshot.forEach((documento) => {
+                    const data = documento.data();
+                    if (data.telefono === telefono) {
+                        docExistenteId = documento.id;
+                        vecesActuales = data.vecesRegistrado ? data.vecesRegistrado : 1;
+                    }
                 });
 
-                alert("¡Muchas gracias por tu registro! Te avisaremos los cambios a la brevedad, mantente al pendiente.");
+                if (docExistenteId) {
+                    const docRef = doc(db, "registros_mac_9n", docExistenteId);
+                    await setDoc(docRef, {
+                        nombre,
+                        estado,
+                        puesto,
+                        modulo,
+                        telefono,
+                        esRepresentante,
+                        acuerdo9N,
+                        foto: fotoBase64,
+                        vecesRegistrado: vecesActuales + 1,
+                        fecha: serverTimestamp()
+                    }, { merge: true });
+
+                    alert("¡Información actualizada con éxito! Como ya estabas registrado, tus datos se han actualizado y el sistema ha registrado tu actualización.");
+                } else {
+                    await addDoc(collection(db, "registros_mac_9n"), {
+                        nombre,
+                        estado,
+                        puesto,
+                        modulo,
+                        telefono,
+                        esRepresentante,
+                        acuerdo9N,
+                        foto: fotoBase64,
+                        vecesRegistrado: 1,
+                        fecha: serverTimestamp()
+                    });
+
+                    alert("¡Muchas gracias por tu registro! Te avisaremos los cambios a la brevedad, mantente al pendiente.");
+                }
+
                 registroForm.reset();
+                actualizarContadorGlobal();
             } catch (error) {
                 console.error("Error al registrar:", error);
                 alert("Hubo un error al guardar tu información. Verifica tu conexión e intenta nuevamente.");
@@ -481,7 +515,10 @@
                 const telWa = telLimpio.length === 10 ? `52${telLimpio}` : telLimpio;
                 const msgWa = encodeURIComponent(`¡Hola ${c.nombre}! Te saludamos desde la coordinación de MACs Unidos. Gracias por sumarte al Paro Nacional 9N.`);
 
-                const badgeRepresentante = c.esRepresentante ? `<span class="badge bg-warning text-dark mb-1"><i class="fa-solid fa-user-tie me-1"></i> Representante Asignado</span><br>` : '';
+                const badgeRepresentante = c.esRepresentante ? `<span class="badge bg-warning text-dark mb-1"><i class="fa-solid fa-user-tie me-1"></i> Representante</span> ` : '';
+                const badgePuesto = c.puesto ? `<span class="badge bg-primary mb-1">${c.puesto}</span> ` : '';
+                const veces = c.vecesRegistrado ? c.vecesRegistrado : 1;
+                const badgeDuplicado = veces > 1 ? `<span class="badge bg-danger mb-1"><i class="fa-solid fa-rotate-right me-1"></i> Registrado ${veces} veces (Actualizado)</span><br>` : '';
 
                 html += `
                     <div class="col-md-6 col-lg-4 mb-3">
@@ -490,7 +527,11 @@
                                 <img src="${fotoSrc}" class="avatar-img me-3 shadow" alt="Foto">
                                 <div class="flex-grow-1 overflow-hidden">
                                     <h5 class="mb-1 text-truncate fw-bold">${c.nombre}</h5>
-                                    ${badgeRepresentante}
+                                    <div>
+                                        ${badgeRepresentante}
+                                        ${badgePuesto}
+                                    </div>
+                                    ${badgeDuplicado}
                                     <p class="mb-1 text-info small"><i class="fa-solid fa-map-location-dot me-1"></i> ${c.estado} | <strong>${c.modulo || 'S/M'}</strong></p>
                                     <p class="mb-1 text-muted small"><i class="fa-solid fa-phone me-1"></i> ${c.telefono}</p>
                                     <span class="badge bg-danger"><i class="fa-solid fa-triangle-exclamation me-1"></i> Paro 9N Confirmado</span>
@@ -516,8 +557,15 @@
 
             const filtrados = listaContactos.filter(c => {
                 const coincideEstado = !estadoFiltro || c.estado === estadoFiltro;
-                const coincideTexto = c.nombre.toLowerCase().includes(textoBusqueda) || c.telefono.includes(textoBusqueda) || (c.modulo && c.modulo.toLowerCase().includes(textoBusqueda));
-                const coincideRol = filtroRol === 'todos' || (filtroRol === 'representantes' && c.esRepresentante === true);
+                const coincideTexto = c.nombre.toLowerCase().includes(textoBusqueda) || c.telefono.includes(textoBusqueda) || (c.modulo && c.modulo.toLowerCase().includes(textoBusqueda)) || (c.puesto && c.puesto.toLowerCase().includes(textoBusqueda));
+                
+                let coincideRol = true;
+                if (filtroRol === 'representantes') {
+                    coincideRol = c.esRepresentante === true;
+                } else if (filtroRol === 'duplicados') {
+                    coincideRol = (c.vecesRegistrado && c.vecesRegistrado > 1);
+                }
+
                 return coincideEstado && coincideTexto && coincideRol;
             });
 
@@ -543,13 +591,14 @@
                 const telLimpio = c.telefono.replace(/\D/g, '');
                 const telFormat = telLimpio.length === 10 ? `+52${telLimpio}` : `+${telLimpio}`;
                 const rolStr = c.esRepresentante ? '[REPRESENTANTE] ' : '';
+                const puestoStr = c.puesto ? `[${c.puesto}] ` : '';
                 
                 vcardData += `BEGIN:VCARD\n`;
                 vcardData += `VERSION:3.0\n`;
-                vcardData += `FN:MACs 9N - ${rolStr}${c.nombre} (${c.estado})\n`;
+                vcardData += `FN:MACs 9N - ${puestoStr}${rolStr}${c.nombre} (${c.estado})\n`;
                 vcardData += `N:;${c.nombre};;;\n`;
                 vcardData += `TEL;TYPE=CELL:${telFormat}\n`;
-                vcardData += `NOTE:Adscripción: ${c.estado} - ${c.modulo || 'Sin módulo'} ${c.esRepresentante ? '- REPRESENTANTE' : ''} (Paro 9N)\n`;
+                vcardData += `NOTE:Puesto: ${c.puesto || 'N/A'} - Adscripción: ${c.estado} - ${c.modulo || 'Sin módulo'} (Paro 9N)\n`;
                 vcardData += `END:VCARD\n`;
             });
 
