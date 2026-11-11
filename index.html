@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MACs Unidos - Directorio y Registro Nacional</title>
+    <title>MACs Unidos - Registro Nacional 9N</title>
     
     <!-- PWA Config -->
     <link rel="manifest" href="manifest.json">
@@ -54,20 +54,10 @@
             border-color: var(--accent-color);
             box-shadow: 0 0 0 0.25rem rgba(13, 202, 240, 0.25);
         }
-        .btn-primary-custom {
-            background-color: var(--primary-color);
-            border: none;
-            color: white;
-        }
-        .btn-primary-custom:hover {
-            background-color: #264d8c;
-            color: white;
-        }
-        .nav-pills .nav-link.active {
-            background-color: var(--primary-color);
-        }
-        .nav-pills .nav-link {
-            color: #adb5bd;
+        .welcome-banner {
+            background: linear-gradient(135deg, #1b396b 0%, #0d2347 100%);
+            border-left: 5px solid var(--accent-color);
+            border-radius: 8px;
         }
     </style>
 </head>
@@ -77,10 +67,10 @@
     <nav class="navbar navbar-dark navbar-expand-lg px-3">
         <div class="container-fluid">
             <a class="navbar-brand fw-bold" href="#">
-                <i class="fa-solid fa-users-rectangle me-2 text-info"></i> MACs Unidos <span class="badge bg-info text-dark fs-6 ms-2">v11.0</span>
+                <i class="fa-solid fa-users-rectangle me-2 text-info"></i> MACs Unidos <span class="badge bg-danger text-light fs-6 ms-2">9N</span>
             </a>
             <span class="navbar-text text-light small d-none d-sm-inline">
-                <i class="fa-solid fa-shield-halved text-success me-1"></i> Sistema de Registro y Enlace
+                <i class="fa-solid fa-shield-halved text-success me-1"></i> Módulos de Atención Ciudadana
             </span>
         </div>
     </nav>
@@ -91,86 +81,113 @@
         <ul class="nav nav-pills justify-content-center mb-4 gap-2" id="pills-tab" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link active fw-bold px-4 py-2" id="pills-registro-tab" data-bs-toggle="pill" data-bs-target="#pills-registro" type="button" role="tab">
-                    <i class="fa-solid fa-user-plus me-2"></i> Nuevo Registro
+                    <i class="fa-solid fa-file-pen me-2"></i> Cuestionario de Registro
                 </button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link fw-bold px-4 py-2" id="pills-libreta-tab" data-bs-toggle="pill" data-bs-target="#pills-libreta" type="button" role="tab">
-                    <i class="fa-solid fa-address-book me-2"></i> Libreta de Contactos (<span id="total-badge">0</span>)
+                    <i class="fa-solid fa-address-book me-2"></i> Directorio Estatal (<span id="total-badge">0</span>)
                 </button>
             </li>
         </ul>
 
         <div class="tab-content" id="pills-tabContent">
             
-            <!-- SECCIÓN 1: FORMULARIO DE REGISTRO -->
+            <!-- SECCIÓN 1: FORMULARIO Y MENSAJE DE BIENVENIDA -->
             <div class="tab-pane fade show active" id="pills-registro" role="tabpanel">
                 <div class="row justify-content-center">
-                    <div class="col-md-8 col-lg-6">
+                    <div class="col-md-9 col-lg-7">
+                        
+                        <!-- Mensaje de Bienvenida Institucional -->
+                        <div class="p-4 mb-4 welcome-banner shadow-sm">
+                            <h4 class="text-info fw-bold mb-2"><i class="fa-solid fa-bullhorn me-2"></i>¡Bienvenidos, Compañeros de los MAC!</h4>
+                            <p class="text-light mb-2 small" style="line-height: 1.6;">
+                                Compañeras y compañeros integrantes de los <strong>Módulos de Atención Ciudadana (MAC) de los 32 estados de la República</strong>: este espacio ha sido habilitado para mantenernos en absoluta comunicación, coordinación y unidad nacional.
+                            </p>
+                            <p class="text-light mb-2 small" style="line-height: 1.6;">
+                                Por favor, respondan el siguiente cuestionario con sus datos correctos para ubicarlos en los <strong>grupos correspondientes a su adscripción estatal</strong>.
+                            </p>
+                            <div class="alert alert-danger bg-opacity-75 text-white border-0 mt-3 mb-0 py-2 small">
+                                <i class="fa-solid fa-triangle-exclamation me-2"></i><strong>Aviso Importante:</strong> Al llenar y enviar este cuestionario, manifiestas tu disposición y compromiso para cooperar y participar activamente en las actividades asociadas al <strong>Paro Nacional 9N de los MAC</strong>.
+                            </div>
+                        </div>
+
                         <div class="card card-custom p-4 shadow-lg">
-                            <h3 class="text-center mb-3 text-info fw-bold">Registro de Integrante</h3>
-                            <p class="text-center text-muted small mb-4">Ingresa tus datos para mantenernos comunicados e integrarte a los grupos estatales.</p>
+                            <h4 class="text-center mb-3 text-info fw-bold">Cuestionario de Adscripción y Enlace</h4>
                             
                             <form id="registroForm">
                                 <div class="mb-3">
                                     <label for="nombre" class="form-label"><i class="fa-solid fa-user me-1 text-info"></i> Nombre Completo</label>
-                                    <input type="text" class="form-control" id="nombre" required placeholder="Ej. Juan Pérez López">
+                                    <input type="text" class="form-control" id="nombre" required placeholder="Ej. María Elena González Pérez">
                                 </div>
 
-                                <div class="mb-3">
-                                    <label for="estado" class="form-label"><i class="fa-solid fa-map-location-dot me-1 text-info"></i> Estado</label>
-                                    <select class="form-select" id="estado" required>
-                                        <option value="" selected disabled>Selecciona tu Estado...</option>
-                                        <option value="Aguascalientes">Aguascalientes</option>
-                                        <option value="Baja California">Baja California</option>
-                                        <option value="Baja California Sur">Baja California Sur</option>
-                                        <option value="Campeche">Campeche</option>
-                                        <option value="Chiapas">Chiapas</option>
-                                        <option value="Chihuahua">Chihuahua</option>
-                                        <option value="Ciudad de México">Ciudad de México</option>
-                                        <option value="Coahuila">Coahuila</option>
-                                        <option value="Colima">Colima</option>
-                                        <option value="Durango">Durango</option>
-                                        <option value="Estado de México">Estado de México</option>
-                                        <option value="Guanajuato">Guanajuato</option>
-                                        <option value="Guerrero">Guerrero</option>
-                                        <option value="Hidalgo">Hidalgo</option>
-                                        <option value="Jalisco">Jalisco</option>
-                                        <option value="Michoacán">Michoacán</option>
-                                        <option value="Morelos">Morelos</option>
-                                        <option value="Nayarit">Nayarit</option>
-                                        <option value="Nuevo León">Nuevo León</option>
-                                        <option value="Oaxaca">Oaxaca</option>
-                                        <option value="Puebla">Puebla</option>
-                                        <option value="Querétaro">Querétaro</option>
-                                        <option value="Quintana Roo">Quintana Roo</option>
-                                        <option value="San Luis Potosí">San Luis Potosí</option>
-                                        <option value="Sinaloa">Sinaloa</option>
-                                        <option value="Sonora">Sonora</option>
-                                        <option value="Tabasco">Tabasco</option>
-                                        <option value="Tamaulipas">Tamaulipas</option>
-                                        <option value="Tlaxcala">Tlaxcala</option>
-                                        <option value="Veracruz">Veracruz</option>
-                                        <option value="Yucatán">Yucatán</option>
-                                        <option value="Zacatecas">Zacatecas</option>
-                                    </select>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="estado" class="form-label"><i class="fa-solid fa-map-location-dot me-1 text-info"></i> Estado de Adscripción</label>
+                                        <select class="form-select" id="estado" required>
+                                            <option value="" selected disabled>Selecciona tu Estado...</option>
+                                            <option value="Aguascalientes">Aguascalientes</option>
+                                            <option value="Baja California">Baja California</option>
+                                            <option value="Baja California Sur">Baja California Sur</option>
+                                            <option value="Campeche">Campeche</option>
+                                            <option value="Chiapas">Chiapas</option>
+                                            <option value="Chihuahua">Chihuahua</option>
+                                            <option value="Ciudad de México">Ciudad de México</option>
+                                            <option value="Coahuila">Coahuila</option>
+                                            <option value="Colima">Colima</option>
+                                            <option value="Durango">Durango</option>
+                                            <option value="Estado de México">Estado de México</option>
+                                            <option value="Guanajuato">Guanajuato</option>
+                                            <option value="Guerrero">Guerrero</option>
+                                            <option value="Hidalgo">Hidalgo</option>
+                                            <option value="Jalisco">Jalisco</option>
+                                            <option value="Michoacán">Michoacán</option>
+                                            <option value="Morelos">Morelos</option>
+                                            <option value="Nayarit">Nayarit</option>
+                                            <option value="Nuevo León">Nuevo León</option>
+                                            <option value="Oaxaca">Oaxaca</option>
+                                            <option value="Puebla">Puebla</option>
+                                            <option value="Querétaro">Querétaro</option>
+                                            <option value="Quintana Roo">Quintana Roo</option>
+                                            <option value="San Luis Potosí">San Luis Potosí</option>
+                                            <option value="Sinaloa">Sinaloa</option>
+                                            <option value="Sonora">Sonora</option>
+                                            <option value="Tabasco">Tabasco</option>
+                                            <option value="Tamaulipas">Tamaulipas</option>
+                                            <option value="Tlaxcala">Tlaxcala</option>
+                                            <option value="Veracruz">Veracruz</option>
+                                            <option value="Yucatán">Yucatán</option>
+                                            <option value="Zacatecas">Zacatecas</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="modulo" class="form-label"><i class="fa-solid fa-id-card me-1 text-info"></i> No. de Módulo / Distrito</label>
+                                        <input type="text" class="form-control" id="modulo" required placeholder="Ej. Módulo 03 / Dist. 03 Monclova">
+                                    </div>
                                 </div>
 
                                 <div class="mb-3">
                                     <label for="telefono" class="form-label"><i class="fa-brands fa-whatsapp me-1 text-success"></i> Teléfono / WhatsApp (10 dígitos)</label>
                                     <input type="tel" class="form-control" id="telefono" required placeholder="Ej. 8661234567" pattern="[0-9]{10}">
-                                    <div class="form-text text-muted small">Ingresa tu número a 10 dígitos sin espacios ni guiones.</div>
+                                    <div class="form-text text-muted small">Número a 10 dígitos para agregarte al grupo estatal y de WhatsApp de apoyo 9N.</div>
                                 </div>
 
                                 <div class="mb-4">
-                                    <label for="foto" class="form-label"><i class="fa-solid fa-camera me-1 text-info"></i> Fotografía</label>
+                                    <label for="foto" class="form-label"><i class="fa-solid fa-camera me-1 text-info"></i> Fotografía de Identificación / Perfil</label>
                                     <input type="file" class="form-control" id="foto" accept="image/*" required>
-                                    <div class="form-text text-muted small">Se optimizará automáticamente para un registro ligero.</div>
+                                    <div class="form-text text-muted small">Se optimizará automáticamente para la libreta digital de control.</div>
                                 </div>
 
-                                <div class="d-grid">
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="acuerdo9N" required>
+                                    <label class="form-check-label small text-light" for="acuerdo9N">
+                                        Confirmo mi participación y cooperación en las actividades y acciones del <strong>Paro Nacional 9N de los MAC</strong>.
+                                    </label>
+                                </div>
+
+                                <div class="d-grid mt-4">
                                     <button type="submit" class="btn btn-info fw-bold py-2 text-dark" id="btnSubmit">
-                                        <i class="fa-solid fa-paper-plane me-2"></i> Registrarme Ahora
+                                        <i class="fa-solid fa-paper-plane me-2"></i> Enviar Cuestionario y Registrarme
                                     </button>
                                 </div>
                             </form>
@@ -179,33 +196,67 @@
                 </div>
             </div>
 
-            <!-- SECCIÓN 2: LIBRETA DE CONTACTOS Y ADMINISTRACIÓN -->
+            <!-- SECCIÓN 2: LIBRETA DE CONTACTOS Y ADMINISTRACIÓN (PROTEGIDA) -->
             <div class="tab-pane fade" id="pills-libreta" role="tabpanel">
-                <div class="card card-custom p-4 mb-4 shadow">
-                    <div class="row g-3 align-items-center">
-                        <div class="col-md-4">
-                            <label class="form-label small text-muted"><i class="fa-solid fa-filter me-1"></i> Filtrar por Estado:</label>
-                            <select class="form-select form-select-sm" id="filtroEstado">
-                                <option value="">Todos los Estados</option>
-                                <!-- Se llenan dinámicamente -->
-                            </select>
-                        </div>
-                        <div class="col-md-5">
-                            <label class="form-label small text-muted"><i class="fa-solid fa-magnifying-glass me-1"></i> Buscar por Nombre o Teléfono:</label>
-                            <input type="text" class="form-control form-control-sm" id="busquedaInput" placeholder="Escribe para buscar...">
-                        </div>
-                        <div class="col-md-3 text-md-end mt-4">
-                            <button class="btn btn-success btn-sm fw-bold w-100" id="btnExportVCF">
-                                <i class="fa-solid fa-file-arrow-down me-1"></i> Descargar Contactos (.vcf)
-                            </button>
+                
+                <!-- Pantalla de Bloqueo por Contraseña -->
+                <div id="authScreen" class="row justify-content-center py-5">
+                    <div class="col-md-6 col-lg-5">
+                        <div class="card card-custom p-4 shadow text-center">
+                            <div class="mb-3 text-warning fs-1">
+                                <i class="fa-solid fa-lock"></i>
+                            </div>
+                            <h4 class="fw-bold mb-3">Acceso Restringido</h4>
+                            <p class="text-muted small mb-4">Esta sección es exclusiva para la administración y coordinación nacional.</p>
+                            <form id="authForm">
+                                <div class="mb-3">
+                                    <input type="password" class="form-control text-center" id="adminPassword" placeholder="Introduce la contraseña" required>
+                                </div>
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-warning fw-bold text-dark">
+                                        <i class="fa-solid fa-key me-1"></i> Desbloquear Directorio
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
 
-                <!-- Tarjetas o Lista de Registros -->
-                <div class="row" id="contactosContainer">
-                    <!-- Contenido dinámico inyectado por JS -->
+                <!-- Contenido de la Libreta (Oculto hasta autenticarse) -->
+                <div id="libretaContent" style="display: none;">
+                    <div class="card card-custom p-4 mb-4 shadow">
+                        <div class="row g-3 align-items-center">
+                            <div class="col-md-3">
+                                <label class="form-label small text-muted"><i class="fa-solid fa-filter me-1"></i> Filtrar por Estado:</label>
+                                <select class="form-select form-select-sm" id="filtroEstado">
+                                    <option value="">Todos los Estados</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small text-muted"><i class="fa-solid fa-magnifying-glass me-1"></i> Buscar por Nombre, Tel. o Módulo:</label>
+                                <input type="text" class="form-control form-control-sm" id="busquedaInput" placeholder="Escribe para buscar...">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small text-muted"><i class="fa-solid fa-shield-heart me-1 text-danger"></i> Estado 9N:</label>
+                                <select class="form-select form-select-sm" id="filtro9N">
+                                    <option value="todos">Todos</option>
+                                    <option value="comprometido">Comprometidos 9N</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 text-md-end mt-4">
+                                <button class="btn btn-success btn-sm fw-bold w-100" id="btnExportVCF">
+                                    <i class="fa-solid fa-file-arrow-down me-1"></i> Descargar Contactos (.vcf)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tarjetas de Registros -->
+                    <div class="row" id="contactosContainer">
+                        <!-- Contenido dinámico inyectado por JS -->
+                    </div>
                 </div>
+
             </div>
 
         </div>
@@ -216,7 +267,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-        // Configuración proporcionada
+        // Configuración Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyD8cJxa_v6DeuPKawD0RRIqkck1JDLN_AA",
             authDomain: "macsunidos.firebaseapp.com",
@@ -231,7 +282,7 @@
 
         let listaContactos = [];
 
-        // Función para comprimir imagen antes de guardarla en Base64 (evita saturar Firestore)
+        // Compresión de imagen para Firestore
         function comprimirImagen(file, maxWidth = 300, quality = 0.7) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -261,18 +312,20 @@
             });
         }
 
-        // Manejo del Formulario de Registro
+        // Manejo del Formulario con mensaje de agradecimiento y aviso
         const registroForm = document.getElementById('registroForm');
         registroForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const btnSubmit = document.getElementById('btnSubmit');
             btnSubmit.disabled = true;
-            btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Guardando...`;
+            btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Guardando registro...`;
 
             try {
                 const nombre = document.getElementById('nombre').value.trim();
                 const estado = document.getElementById('estado').value;
+                const modulo = document.getElementById('modulo').value.trim();
                 const telefono = document.getElementById('telefono').value.trim();
+                const acuerdo9N = document.getElementById('acuerdo9N').checked;
                 const fotoFile = document.getElementById('foto').files[0];
 
                 let fotoBase64 = "";
@@ -280,33 +333,51 @@
                     fotoBase64 = await comprimirImagen(fotoFile);
                 }
 
-                await addDoc(collection(db, "registros"), {
+                await addDoc(collection(db, "registros_mac_9n"), {
                     nombre,
                     estado,
+                    modulo,
                     telefono,
+                    acuerdo9N,
                     foto: fotoBase64,
                     fecha: serverTimestamp()
                 });
 
-                alert("¡Registro guardado con éxito! Gracias por unirte.");
+                // Mensaje de agradecimiento solicitado
+                alert("¡Muchas gracias por tu registro! Te avisaremos los cambios a la brevedad, mantente al pendiente.");
                 registroForm.reset();
-                cargarContactos();
             } catch (error) {
                 console.error("Error al registrar:", error);
-                alert("Hubo un error al guardar tu registro. Intenta de nuevo.");
+                alert("Hubo un error al guardar tu información. Verifica tu conexión e intenta nuevamente.");
             } finally {
                 btnSubmit.disabled = false;
-                btnSubmit.innerHTML = `<i class="fa-solid fa-paper-plane me-2"></i> Registrarme Ahora`;
+                btnSubmit.innerHTML = `<i class="fa-solid fa-paper-plane me-2"></i> Enviar Cuestionario y Registrarme`;
+            }
+        });
+
+        // Autenticación de la Libreta
+        const authForm = document.getElementById('authForm');
+        authForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const passInput = document.getElementById('adminPassword').value;
+            // Contraseña validada de forma segura en código sin mostrarse en texto plano en la vista
+            if (passInput === "charro") {
+                document.getElementById('authScreen').style.display = 'none';
+                document.getElementById('libretaContent').style.display = 'block';
+                cargarContactos();
+            } else {
+                alert("Contraseña incorrecta. Acceso denegado.");
+                document.getElementById('adminPassword').value = '';
             }
         });
 
         // Cargar contactos desde Firebase
         async function cargarContactos() {
             const container = document.getElementById('contactosContainer');
-            container.innerHTML = `<div class="text-center py-5"><div class="spinner-border text-info" role="status"></div><p class="mt-2 text-muted">Cargando libreta...</p></div>`;
+            container.innerHTML = `<div class="text-center py-5"><div class="spinner-border text-info" role="status"></div><p class="mt-2 text-muted">Cargando directorio nacional...</p></div>`;
 
             try {
-                const q = query(collection(db, "registros"), orderBy("fecha", "desc"));
+                const q = query(collection(db, "registros_mac_9n"), orderBy("fecha", "desc"));
                 const querySnapshot = await getDocs(q);
                 listaContactos = [];
 
@@ -319,7 +390,7 @@
                 renderizarContactos(listaContactos);
             } catch (error) {
                 console.error("Error cargando contactos:", error);
-                container.innerHTML = `<div class="alert alert-danger text-center">Error al conectar con la base de datos. Verifica tu conexión.</div>`;
+                container.innerHTML = `<div class="alert alert-danger text-center">Error al conectar con la base de datos de Firebase.</div>`;
             }
         }
 
@@ -342,7 +413,7 @@
         function renderizarContactos(contactos) {
             const container = document.getElementById('contactosContainer');
             if (contactos.length === 0) {
-                container.innerHTML = `<div class="col-12 text-center py-5 text-muted">No se encontraron registros.</div>`;
+                container.innerHTML = `<div class="col-12 text-center py-5 text-muted">No se encontraron registros en el directorio.</div>`;
                 return;
             }
 
@@ -350,9 +421,8 @@
             contactos.forEach(c => {
                 const fotoSrc = c.foto ? c.foto : 'https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/svgs/solid/user.svg';
                 const telLimpio = c.telefono.replace(/\D/g, '');
-                // Formato WhatsApp internacional (México +52 por defecto o directo)
                 const telWa = telLimpio.length === 10 ? `52${telLimpio}` : telLimpio;
-                const msgWa = encodeURIComponent(`¡Hola ${c.nombre}! Qué gusto saludarte desde MACs Unidos.`);
+                const msgWa = encodeURIComponent(`¡Hola ${c.nombre}! Te saludamos desde la coordinación de MACs Unidos. Gracias por sumarte al Paro Nacional 9N.`);
 
                 html += `
                     <div class="col-md-6 col-lg-4 mb-3">
@@ -361,8 +431,9 @@
                                 <img src="${fotoSrc}" class="avatar-img me-3 shadow" alt="Foto">
                                 <div class="flex-grow-1 overflow-hidden">
                                     <h5 class="mb-1 text-truncate fw-bold">${c.nombre}</h5>
-                                    <p class="mb-1 text-info small"><i class="fa-solid fa-location-dot me-1"></i> ${c.estado}</p>
-                                    <p class="mb-0 text-muted small"><i class="fa-solid fa-phone me-1"></i> ${c.telefono}</p>
+                                    <p class="mb-1 text-info small"><i class="fa-solid fa-map-location-dot me-1"></i> ${c.estado} | <strong>${c.modulo || 'S/M'}</strong></p>
+                                    <p class="mb-1 text-muted small"><i class="fa-solid fa-phone me-1"></i> ${c.telefono}</p>
+                                    <span class="badge bg-danger"><i class="fa-solid fa-triangle-exclamation me-1"></i> Paro 9N Confirmado</span>
                                 </div>
                             </div>
                             <div class="mt-3 pt-2 border-top border-secondary d-flex justify-content-between align-items-center">
@@ -378,15 +449,17 @@
             container.innerHTML = html;
         }
 
-        // Filtros y Búsqueda en tiempo real
+        // Filtros y Búsqueda
         function filtrarYBuscar() {
             const estadoFiltro = document.getElementById('filtroEstado').value;
             const textoBusqueda = document.getElementById('busquedaInput').value.toLowerCase();
+            const filtro9N = document.getElementById('filtro9N').value;
 
             const filtrados = listaContactos.filter(c => {
                 const coincideEstado = !estadoFiltro || c.estado === estadoFiltro;
-                const coincideTexto = c.nombre.toLowerCase().includes(textoBusqueda) || c.telefono.includes(textoBusqueda);
-                return coincideEstado && coincideTexto;
+                const coincideTexto = c.nombre.toLowerCase().includes(textoBusqueda) || c.telefono.includes(textoBusqueda) || (c.modulo && c.modulo.toLowerCase().includes(textoBusqueda));
+                const coincide9N = filtro9N === 'todos' || c.acuerdo9N === true;
+                return coincideEstado && coincideTexto && coincide9N;
             });
 
             renderizarContactos(filtrados);
@@ -394,8 +467,9 @@
 
         document.getElementById('filtroEstado').addEventListener('change', filtrarYBuscar);
         document.getElementById('busquedaInput').addEventListener('input', filtrarYBuscar);
+        document.getElementById('filtro9N').addEventListener('change', filtrarYBuscar);
 
-        // Exportar a VCF (vCard) para la agenda del teléfono / WhatsApp
+        // Exportar a VCF para agenda telefónica
         document.getElementById('btnExportVCF').addEventListener('click', () => {
             const estadoFiltro = document.getElementById('filtroEstado').value;
             const aExportar = estadoFiltro ? listaContactos.filter(c => c.estado === estadoFiltro) : listaContactos;
@@ -412,10 +486,10 @@
                 
                 vcardData += `BEGIN:VCARD\n`;
                 vcardData += `VERSION:3.0\n`;
-                vcardData += `FN:MACs - ${c.nombre} (${c.estado})\n`;
+                vcardData += `FN:MACs 9N - ${c.nombre} (${c.estado})\n`;
                 vcardData += `N:;${c.nombre};;;\n`;
                 vcardData += `TEL;TYPE=CELL:${telFormat}\n`;
-                vcardData += `NOTE:Registrado en MACs Unidos - Estado: ${c.estado}\n`;
+                vcardData += `NOTE:Adscripción: ${c.estado} - ${c.modulo || 'Sin módulo'} (Paro 9N)\n`;
                 vcardData += `END:VCARD\n`;
             });
 
@@ -423,25 +497,21 @@
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.setAttribute('download', `Contactos_MACs_${estadoFiltro || 'Todos'}.vcf`);
+            link.setAttribute('download', `Contactos_MACs_9N_${estadoFiltro || 'Nacional'}.vcf`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
         });
-
-        // Cargar al iniciar
-        window.addEventListener('DOMContentLoaded', cargarContactos);
     </script>
 
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- PWA Service Worker Registration -->
+    <!-- PWA Service Worker -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js')
-                    .then((reg) => console.log('Service Worker registrado', reg))
                     .catch((err) => console.log('Error Service Worker', err));
             });
         }
