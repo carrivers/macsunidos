@@ -59,7 +59,6 @@
             border-left: 5px solid var(--accent-color);
             border-radius: 8px;
         }
-        /* Estilo mejorado de alta legibilidad para el aviso importante */
         .alert-aviso-importante {
             background-color: #231b1b !important;
             border: 1px solid #dc3545 !important;
@@ -115,7 +114,7 @@
                                 Por favor, respondan el siguiente cuestionario con sus datos correctos para ubicarlos en los <strong>grupos correspondientes a su adscripción estatal</strong>.
                             </p>
                             
-                            <!-- Cuadro de Aviso Importante con alta legibilidad -->
+                            <!-- Cuadro de Aviso Importante -->
                             <div class="alert alert-aviso-importante mt-3 mb-0 p-3 rounded small">
                                 <div class="d-flex align-items-start">
                                     <i class="fa-solid fa-triangle-exclamation text-warning fs-4 me-3 mt-1"></i>
@@ -128,17 +127,18 @@
                         </div>
 
                         <div class="card card-custom p-4 shadow-lg">
-                            <h4 class="text-center mb-3 text-info fw-bold">Cuestionario de Adscripción y Enlace</h4>
+                            <h4 class="text-center mb-3 text-info fw-bold">Cuestionario Obligatorio de Adscripción</h4>
+                            <p class="text-center text-muted small mb-4">Todos los campos y la fotografía son obligatorios para completar tu registro.</p>
                             
                             <form id="registroForm" novalidate>
                                 <div class="mb-3">
-                                    <label for="nombre" class="form-label text-white"><i class="fa-solid fa-user me-1 text-info"></i> Nombre Completo</label>
+                                    <label for="nombre" class="form-label text-white"><i class="fa-solid fa-user me-1 text-info"></i> Nombre Completo <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control" id="nombre" required placeholder="Ej. María Elena González Pérez">
                                 </div>
 
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
-                                        <label for="estado" class="form-label text-white"><i class="fa-solid fa-map-location-dot me-1 text-info"></i> Estado de Adscripción</label>
+                                        <label for="estado" class="form-label text-white"><i class="fa-solid fa-map-location-dot me-1 text-info"></i> Estado de Adscripción <span class="text-danger">*</span></label>
                                         <select class="form-select" id="estado" required>
                                             <option value="" selected disabled>Selecciona tu Estado...</option>
                                             <option value="Aguascalientes">Aguascalientes</option>
@@ -176,21 +176,21 @@
                                         </select>
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <label for="modulo" class="form-label text-white"><i class="fa-solid fa-id-card me-1 text-info"></i> No. de Módulo / Distrito</label>
+                                        <label for="modulo" class="form-label text-white"><i class="fa-solid fa-id-card me-1 text-info"></i> No. de Módulo / Distrito <span class="text-danger">*</span></label>
                                         <input type="text" class="form-control" id="modulo" required placeholder="Ej. Módulo 03 / Dist. 03 Monclova">
                                     </div>
                                 </div>
 
                                 <div class="mb-3">
-                                    <label for="telefono" class="form-label text-white"><i class="fa-brands fa-whatsapp me-1 text-success"></i> Teléfono / WhatsApp (10 dígitos)</label>
+                                    <label for="telefono" class="form-label text-white"><i class="fa-brands fa-whatsapp me-1 text-success"></i> Teléfono / WhatsApp (10 dígitos) <span class="text-danger">*</span></label>
                                     <input type="tel" class="form-control" id="telefono" required placeholder="Ej. 8661234567" pattern="[0-9]{10}">
                                     <div class="form-text text-light opacity-75 small">Número único a 10 dígitos (el sistema validará si ya estás registrado).</div>
                                 </div>
 
                                 <div class="mb-4">
-                                    <label for="foto" class="form-label text-white"><i class="fa-solid fa-camera me-1 text-info"></i> Fotografía de Identificación / Perfil</label>
+                                    <label for="foto" class="form-label text-white"><i class="fa-solid fa-camera me-1 text-info"></i> Fotografía Clara (Perfil / Identificación) <span class="text-danger">*</span></label>
                                     <input type="file" class="form-control" id="foto" accept="image/*" required>
-                                    <div class="form-text text-light opacity-75 small">Se optimizará automáticamente para la libreta digital de control.</div>
+                                    <div class="form-text text-warning small"><i class="fa-solid fa-circle-info me-1"></i> La foto debe ser clara. El sistema la optimizará automáticamente para que no sea pesada.</div>
                                 </div>
 
                                 <!-- OPCIÓN DE REPRESENTANTE -->
@@ -308,8 +308,8 @@
 
         let listaContactos = [];
 
-        // Compresión de imagen para Firestore
-        function comprimirImagen(file, maxWidth = 300, quality = 0.7) {
+        // Compresión inteligente de imagen (clara y no pesada)
+        function comprimirImagen(file, maxWidth = 350, quality = 0.75) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
@@ -354,7 +354,7 @@
             }
         }
 
-        // Manejo del Formulario con Validación Antiduplicados
+        // Manejo del Formulario con Validación Estricta
         const registroForm = document.getElementById('registroForm');
         registroForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -367,8 +367,9 @@
             const acuerdo9N = document.getElementById('acuerdo9N').checked;
             const fotoFile = document.getElementById('foto').files[0];
 
+            // Validar que absolutamente todo esté contestado
             if (!nombre || !estado || !modulo || !telefono || !fotoFile || !acuerdo9N) {
-                alert("Por favor completa todas las preguntas obligatorias y acepta los términos para continuar.");
+                alert("⚠️ Por favor completa todas las preguntas obligatorias, sube tu fotografía y acepta los términos del Paro 9N.");
                 return;
             }
 
@@ -381,13 +382,13 @@
                 const telefonoRepetido = registrosExistentes.some(r => r.telefono === telefono);
 
                 if (telefonoRepetido) {
-                    alert("⚠️ Este número de teléfono ya se encuentra registrado en el sistema. No se permiten registros duplicados.");
+                    alert("⚠️ Este número de teléfono ya se encuentra registrado en el sistema. La persona ya está registrada.");
                     btnSubmit.disabled = false;
                     btnSubmit.innerHTML = `<i class="fa-solid fa-paper-plane me-2"></i> Enviar Cuestionario y Registrarme`;
                     return;
                 }
 
-                btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Guardando registro...`;
+                btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Optimizando foto y guardando...`;
                 const fotoBase64 = await comprimirImagen(fotoFile);
 
                 await addDoc(collection(db, "registros_mac_9n"), {
