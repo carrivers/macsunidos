@@ -55,9 +55,16 @@
             box-shadow: 0 0 0 0.25rem rgba(13, 202, 240, 0.25);
         }
         .welcome-banner {
-            background: linear-gradient(135deg, #1b396b 0%, #0d2347 100%);
+            background: linear-gradient(135deg, #162642 0%, #0b172c 100%);
             border-left: 5px solid var(--accent-color);
             border-radius: 8px;
+        }
+        /* Estilo mejorado de alta legibilidad para el aviso importante */
+        .alert-aviso-importante {
+            background-color: #231b1b !important;
+            border: 1px solid #dc3545 !important;
+            border-left: 5px solid #dc3545 !important;
+            color: #ffffff !important;
         }
     </style>
 </head>
@@ -107,23 +114,31 @@
                             <p class="text-light mb-2 small" style="line-height: 1.6;">
                                 Por favor, respondan el siguiente cuestionario con sus datos correctos para ubicarlos en los <strong>grupos correspondientes a su adscripción estatal</strong>.
                             </p>
-                            <div class="alert alert-danger bg-opacity-75 text-white border-0 mt-3 mb-0 py-2 small">
-                                <i class="fa-solid fa-triangle-exclamation me-2"></i><strong>Aviso Importante:</strong> Al llenar y enviar este cuestionario, manifiestas tu disposición y compromiso para cooperar y participar activamente en las actividades asociadas al <strong>Paro Nacional 9N de los MAC</strong>.
+                            
+                            <!-- Cuadro de Aviso Importante con alta legibilidad -->
+                            <div class="alert alert-aviso-importante mt-3 mb-0 p-3 rounded small">
+                                <div class="d-flex align-items-start">
+                                    <i class="fa-solid fa-triangle-exclamation text-warning fs-4 me-3 mt-1"></i>
+                                    <div>
+                                        <strong class="text-warning d-block mb-1 fs-6">Aviso Importante:</strong>
+                                        <span class="text-white" style="line-height: 1.5;">Al llenar y enviar este cuestionario, manifiestas tu disposición y compromiso para cooperar y participar activamente en las actividades asociadas al <strong>Paro Nacional 9N de los MAC</strong>.</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
                         <div class="card card-custom p-4 shadow-lg">
                             <h4 class="text-center mb-3 text-info fw-bold">Cuestionario de Adscripción y Enlace</h4>
                             
-                            <form id="registroForm">
+                            <form id="registroForm" novalidate>
                                 <div class="mb-3">
-                                    <label for="nombre" class="form-label"><i class="fa-solid fa-user me-1 text-info"></i> Nombre Completo</label>
+                                    <label for="nombre" class="form-label text-white"><i class="fa-solid fa-user me-1 text-info"></i> Nombre Completo</label>
                                     <input type="text" class="form-control" id="nombre" required placeholder="Ej. María Elena González Pérez">
                                 </div>
 
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
-                                        <label for="estado" class="form-label"><i class="fa-solid fa-map-location-dot me-1 text-info"></i> Estado de Adscripción</label>
+                                        <label for="estado" class="form-label text-white"><i class="fa-solid fa-map-location-dot me-1 text-info"></i> Estado de Adscripción</label>
                                         <select class="form-select" id="estado" required>
                                             <option value="" selected disabled>Selecciona tu Estado...</option>
                                             <option value="Aguascalientes">Aguascalientes</option>
@@ -161,27 +176,38 @@
                                         </select>
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <label for="modulo" class="form-label"><i class="fa-solid fa-id-card me-1 text-info"></i> No. de Módulo / Distrito</label>
+                                        <label for="modulo" class="form-label text-white"><i class="fa-solid fa-id-card me-1 text-info"></i> No. de Módulo / Distrito</label>
                                         <input type="text" class="form-control" id="modulo" required placeholder="Ej. Módulo 03 / Dist. 03 Monclova">
                                     </div>
                                 </div>
 
                                 <div class="mb-3">
-                                    <label for="telefono" class="form-label"><i class="fa-brands fa-whatsapp me-1 text-success"></i> Teléfono / WhatsApp (10 dígitos)</label>
+                                    <label for="telefono" class="form-label text-white"><i class="fa-brands fa-whatsapp me-1 text-success"></i> Teléfono / WhatsApp (10 dígitos)</label>
                                     <input type="tel" class="form-control" id="telefono" required placeholder="Ej. 8661234567" pattern="[0-9]{10}">
-                                    <div class="form-text text-muted small">Número a 10 dígitos para agregarte al grupo estatal y de WhatsApp de apoyo 9N.</div>
+                                    <div class="form-text text-light opacity-75 small">Número único a 10 dígitos (el sistema validará si ya estás registrado).</div>
                                 </div>
 
                                 <div class="mb-4">
-                                    <label for="foto" class="form-label"><i class="fa-solid fa-camera me-1 text-info"></i> Fotografía de Identificación / Perfil</label>
+                                    <label for="foto" class="form-label text-white"><i class="fa-solid fa-camera me-1 text-info"></i> Fotografía de Identificación / Perfil</label>
                                     <input type="file" class="form-control" id="foto" accept="image/*" required>
-                                    <div class="form-text text-muted small">Se optimizará automáticamente para la libreta digital de control.</div>
+                                    <div class="form-text text-light opacity-75 small">Se optimizará automáticamente para la libreta digital de control.</div>
+                                </div>
+
+                                <!-- OPCIÓN DE REPRESENTANTE -->
+                                <div class="mb-3 p-3 rounded border border-secondary bg-dark">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="esRepresentante">
+                                        <label class="form-check-label text-info fw-bold" for="esRepresentante">
+                                            <i class="fa-solid fa-user-tie me-1"></i> Asignado como Representante
+                                        </label>
+                                    </div>
+                                    <div class="form-text text-light opacity-75 small mt-1">Marca esta casilla únicamente si fuiste designado como representante de módulo o estatal.</div>
                                 </div>
 
                                 <div class="mb-3 form-check">
                                     <input type="checkbox" class="form-check-input" id="acuerdo9N" required>
-                                    <label class="form-check-label small text-light" for="acuerdo9N">
-                                        Confirmo mi participación y cooperación en las actividades y acciones del <strong>Paro Nacional 9N de los MAC</strong>.
+                                    <label class="form-check-label small text-white" for="acuerdo9N">
+                                        Confirmo mi participación y cooperación en las actividades y acciones del <strong>Paro Nacional 9N de los MAC</strong>. <span class="text-danger">*</span>
                                     </label>
                                 </div>
 
@@ -206,8 +232,8 @@
                             <div class="mb-3 text-warning fs-1">
                                 <i class="fa-solid fa-lock"></i>
                             </div>
-                            <h4 class="fw-bold mb-3">Acceso Restringido</h4>
-                            <p class="text-muted small mb-4">Esta sección es exclusiva para la administración y coordinación nacional.</p>
+                            <h4 class="fw-bold mb-3 text-white">Acceso Restringido</h4>
+                            <p class="text-light opacity-75 small mb-4">Esta sección es exclusiva para la administración y coordinación nacional.</p>
                             <form id="authForm">
                                 <div class="mb-3">
                                     <input type="password" class="form-control text-center" id="adminPassword" placeholder="Introduce la contraseña" required>
@@ -227,20 +253,20 @@
                     <div class="card card-custom p-4 mb-4 shadow">
                         <div class="row g-3 align-items-center">
                             <div class="col-md-3">
-                                <label class="form-label small text-muted"><i class="fa-solid fa-filter me-1"></i> Filtrar por Estado:</label>
+                                <label class="form-label small text-light"><i class="fa-solid fa-filter me-1"></i> Filtrar por Estado:</label>
                                 <select class="form-select form-select-sm" id="filtroEstado">
                                     <option value="">Todos los Estados</option>
                                 </select>
                             </div>
-                            <div class="col-md-4">
-                                <label class="form-label small text-muted"><i class="fa-solid fa-magnifying-glass me-1"></i> Buscar por Nombre, Tel. o Módulo:</label>
+                            <div class="col-md-3">
+                                <label class="form-label small text-light"><i class="fa-solid fa-magnifying-glass me-1"></i> Buscar por Nombre / Tel:</label>
                                 <input type="text" class="form-control form-control-sm" id="busquedaInput" placeholder="Escribe para buscar...">
                             </div>
-                            <div class="col-md-2">
-                                <label class="form-label small text-muted"><i class="fa-solid fa-shield-heart me-1 text-danger"></i> Estado 9N:</label>
-                                <select class="form-select form-select-sm" id="filtro9N">
-                                    <option value="todos">Todos</option>
-                                    <option value="comprometido">Comprometidos 9N</option>
+                            <div class="col-md-3">
+                                <label class="form-label small text-light"><i class="fa-solid fa-user-tie me-1 text-info"></i> Rol:</label>
+                                <select class="form-select form-select-sm" id="filtroRol">
+                                    <option value="todos">Todos los registros</option>
+                                    <option value="representantes">Solo Representantes</option>
                                 </select>
                             </div>
                             <div class="col-md-3 text-md-end mt-4">
@@ -312,38 +338,69 @@
             });
         }
 
-        // Manejo del Formulario con mensaje de agradecimiento y aviso
+        // Cargar registros para validación previa
+        async function obtenerRegistrosActuales() {
+            try {
+                const q = query(collection(db, "registros_mac_9n"));
+                const querySnapshot = await getDocs(q);
+                const regs = [];
+                querySnapshot.forEach((doc) => {
+                    regs.push(doc.data());
+                });
+                return regs;
+            } catch (error) {
+                console.error("Error al verificar duplicados:", error);
+                return [];
+            }
+        }
+
+        // Manejo del Formulario con Validación Antiduplicados
         const registroForm = document.getElementById('registroForm');
         registroForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            
+            const nombre = document.getElementById('nombre').value.trim();
+            const estado = document.getElementById('estado').value;
+            const modulo = document.getElementById('modulo').value.trim();
+            const telefono = document.getElementById('telefono').value.trim();
+            const esRepresentante = document.getElementById('esRepresentante').checked;
+            const acuerdo9N = document.getElementById('acuerdo9N').checked;
+            const fotoFile = document.getElementById('foto').files[0];
+
+            if (!nombre || !estado || !modulo || !telefono || !fotoFile || !acuerdo9N) {
+                alert("Por favor completa todas las preguntas obligatorias y acepta los términos para continuar.");
+                return;
+            }
+
             const btnSubmit = document.getElementById('btnSubmit');
             btnSubmit.disabled = true;
-            btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Guardando registro...`;
+            btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Verificando registro...`;
 
             try {
-                const nombre = document.getElementById('nombre').value.trim();
-                const estado = document.getElementById('estado').value;
-                const modulo = document.getElementById('modulo').value.trim();
-                const telefono = document.getElementById('telefono').value.trim();
-                const acuerdo9N = document.getElementById('acuerdo9N').checked;
-                const fotoFile = document.getElementById('foto').files[0];
+                const registrosExistentes = await obtenerRegistrosActuales();
+                const telefonoRepetido = registrosExistentes.some(r => r.telefono === telefono);
 
-                let fotoBase64 = "";
-                if (fotoFile) {
-                    fotoBase64 = await comprimirImagen(fotoFile);
+                if (telefonoRepetido) {
+                    alert("⚠️ Este número de teléfono ya se encuentra registrado en el sistema. No se permiten registros duplicados.");
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerHTML = `<i class="fa-solid fa-paper-plane me-2"></i> Enviar Cuestionario y Registrarme`;
+                    return;
                 }
+
+                btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Guardando registro...`;
+                const fotoBase64 = await comprimirImagen(fotoFile);
 
                 await addDoc(collection(db, "registros_mac_9n"), {
                     nombre,
                     estado,
                     modulo,
                     telefono,
+                    esRepresentante,
                     acuerdo9N,
                     foto: fotoBase64,
                     fecha: serverTimestamp()
                 });
 
-                // Mensaje de agradecimiento solicitado
                 alert("¡Muchas gracias por tu registro! Te avisaremos los cambios a la brevedad, mantente al pendiente.");
                 registroForm.reset();
             } catch (error) {
@@ -360,7 +417,6 @@
         authForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const passInput = document.getElementById('adminPassword').value;
-            // Contraseña validada de forma segura en código sin mostrarse en texto plano en la vista
             if (passInput === "charro") {
                 document.getElementById('authScreen').style.display = 'none';
                 document.getElementById('libretaContent').style.display = 'block';
@@ -424,6 +480,8 @@
                 const telWa = telLimpio.length === 10 ? `52${telLimpio}` : telLimpio;
                 const msgWa = encodeURIComponent(`¡Hola ${c.nombre}! Te saludamos desde la coordinación de MACs Unidos. Gracias por sumarte al Paro Nacional 9N.`);
 
+                const badgeRepresentante = c.esRepresentante ? `<span class="badge bg-warning text-dark mb-1"><i class="fa-solid fa-user-tie me-1"></i> Representante Asignado</span><br>` : '';
+
                 html += `
                     <div class="col-md-6 col-lg-4 mb-3">
                         <div class="card card-custom p-3 h-100 shadow-sm">
@@ -431,6 +489,7 @@
                                 <img src="${fotoSrc}" class="avatar-img me-3 shadow" alt="Foto">
                                 <div class="flex-grow-1 overflow-hidden">
                                     <h5 class="mb-1 text-truncate fw-bold">${c.nombre}</h5>
+                                    ${badgeRepresentante}
                                     <p class="mb-1 text-info small"><i class="fa-solid fa-map-location-dot me-1"></i> ${c.estado} | <strong>${c.modulo || 'S/M'}</strong></p>
                                     <p class="mb-1 text-muted small"><i class="fa-solid fa-phone me-1"></i> ${c.telefono}</p>
                                     <span class="badge bg-danger"><i class="fa-solid fa-triangle-exclamation me-1"></i> Paro 9N Confirmado</span>
@@ -449,17 +508,16 @@
             container.innerHTML = html;
         }
 
-        // Filtros y Búsqueda
         function filtrarYBuscar() {
             const estadoFiltro = document.getElementById('filtroEstado').value;
             const textoBusqueda = document.getElementById('busquedaInput').value.toLowerCase();
-            const filtro9N = document.getElementById('filtro9N').value;
+            const filtroRol = document.getElementById('filtroRol').value;
 
             const filtrados = listaContactos.filter(c => {
                 const coincideEstado = !estadoFiltro || c.estado === estadoFiltro;
                 const coincideTexto = c.nombre.toLowerCase().includes(textoBusqueda) || c.telefono.includes(textoBusqueda) || (c.modulo && c.modulo.toLowerCase().includes(textoBusqueda));
-                const coincide9N = filtro9N === 'todos' || c.acuerdo9N === true;
-                return coincideEstado && coincideTexto && coincide9N;
+                const coincideRol = filtroRol === 'todos' || (filtroRol === 'representantes' && c.esRepresentante === true);
+                return coincideEstado && coincideTexto && coincideRol;
             });
 
             renderizarContactos(filtrados);
@@ -467,9 +525,9 @@
 
         document.getElementById('filtroEstado').addEventListener('change', filtrarYBuscar);
         document.getElementById('busquedaInput').addEventListener('input', filtrarYBuscar);
-        document.getElementById('filtro9N').addEventListener('change', filtrarYBuscar);
+        document.getElementById('filtroRol').addEventListener('change', filtrarYBuscar);
 
-        // Exportar a VCF para agenda telefónica
+        // Exportar a VCF
         document.getElementById('btnExportVCF').addEventListener('click', () => {
             const estadoFiltro = document.getElementById('filtroEstado').value;
             const aExportar = estadoFiltro ? listaContactos.filter(c => c.estado === estadoFiltro) : listaContactos;
@@ -483,13 +541,14 @@
             aExportar.forEach(c => {
                 const telLimpio = c.telefono.replace(/\D/g, '');
                 const telFormat = telLimpio.length === 10 ? `+52${telLimpio}` : `+${telLimpio}`;
+                const rolStr = c.esRepresentante ? '[REPRESENTANTE] ' : '';
                 
                 vcardData += `BEGIN:VCARD\n`;
                 vcardData += `VERSION:3.0\n`;
-                vcardData += `FN:MACs 9N - ${c.nombre} (${c.estado})\n`;
+                vcardData += `FN:MACs 9N - ${rolStr}${c.nombre} (${c.estado})\n`;
                 vcardData += `N:;${c.nombre};;;\n`;
                 vcardData += `TEL;TYPE=CELL:${telFormat}\n`;
-                vcardData += `NOTE:Adscripción: ${c.estado} - ${c.modulo || 'Sin módulo'} (Paro 9N)\n`;
+                vcardData += `NOTE:Adscripción: ${c.estado} - ${c.modulo || 'Sin módulo'} ${c.esRepresentante ? '- REPRESENTANTE' : ''} (Paro 9N)\n`;
                 vcardData += `END:VCARD\n`;
             });
 
