@@ -1,0 +1,15 @@
+{
+  "name": "MACs Unidos - Registro 9N",
+  "short_name": "MACs Unidos",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#12161f",
+  "theme_color": "#1b396b",
+  "icons": [
+    {
+      "src": "https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/svgs/solid/users-rectangle.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}
