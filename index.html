@@ -273,7 +273,7 @@
                                     <label class="form-label text-white fw-bold mb-2 d-block text-start">
                                         <i class="fa-solid fa-camera me-1 text-info"></i> Fotografía del Integrante <span class="text-danger">*</span>
                                     </label>
-                                    <p class="text-light opacity-75 small mb-3 text-start">Toma o sube tu foto y ajustala al círculo:</p>
+                                    <p class="text-light opacity-75 small mb-3 text-start">Toma o sube tu foto y ajústala al círculo:</p>
                                     
                                     <div class="row g-2 mb-3">
                                         <div class="col-md-6">
@@ -534,13 +534,11 @@
             }
         };
 
-        // Iniciar proceso al seleccionar archivo o cámara
         window.iniciarProcesoRecorte = function(input) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     imgLoaded.onload = function() {
-                        // Calcular escala inicial para que cubra el círculo
                         scale = Math.max(250 / imgLoaded.width, 250 / imgLoaded.height);
                         document.getElementById('zoomRange').value = scale;
                         posX = (250 - imgLoaded.width * scale) / 2;
@@ -550,14 +548,13 @@
 
                         dibujarCanvas();
                         
-                        // Abrir modal de recorte
                         const modalRecorte = new bootstrap.Modal(document.getElementById('modalRecorte'));
                         modalRecorte.show();
                     }
                     imgLoaded.src = e.target.result;
                 }
                 reader.readAsDataURL(input.files[0]);
-                input.value = ''; // limpiar input
+                input.value = '';
             }
         };
 
@@ -572,13 +569,11 @@
             ctx.restore();
         }
 
-        // Control deslizante de Zoom
         document.getElementById('zoomRange').addEventListener('input', function(e) {
             scale = parseFloat(e.target.value);
             dibujarCanvas();
         });
 
-        // Controles de Posición X e Y
         document.getElementById('posXRange').addEventListener('input', function(e) {
             posX = parseInt(e.target.value);
             dibujarCanvas();
@@ -588,7 +583,6 @@
             dibujarCanvas();
         });
 
-        // Arrastrar con mouse o dedo en el círculo
         canvas.addEventListener('mousedown', (e) => {
             isDragging = true;
             startX = e.clientX - posX;
@@ -604,7 +598,6 @@
         });
         window.addEventListener('mouseup', () => { isDragging = false; });
 
-        // Soporte táctil para celulares
         canvas.addEventListener('touchstart', (e) => {
             if (e.touches.length === 1) {
                 isDragging = true;
@@ -622,9 +615,7 @@
         });
         window.addEventListener('touchend', () => { isDragging = false; });
 
-        // Confirmar recorte y generar Base64 circular final
         document.getElementById('btnConfirmarRecorte').addEventListener('click', function() {
-            // Crear canvas temporal circular para exportar imagen redonda limpia
             const tempCanvas = document.createElement('canvas');
             tempCanvas.width = 300;
             tempCanvas.height = 300;
@@ -646,11 +637,9 @@
 
             fotoBase64Final = tempCanvas.toDataURL('image/jpeg', 0.8);
 
-            // Mostrar vista previa en el formulario
             document.getElementById('previewAvatarFinal').src = fotoBase64Final;
             document.getElementById('previewContenedor').style.display = 'block';
 
-            // Cerrar modal
             const modalEl = document.getElementById('modalRecorte');
             const modalInstance = bootstrap.Modal.getInstance(modalEl);
             modalInstance.hide();
@@ -789,12 +778,12 @@
             }
         });
 
-        // Autenticación automática con "charro"
+        // Autenticación automática con "Mariano123.."
         const authForm = document.getElementById('authForm');
         authForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const passInput = document.getElementById('adminPassword').value;
-            if (passInput === "charro") {
+            if (passInput === "Mariano123..") {
                 document.getElementById('authScreen').style.display = 'none';
                 document.getElementById('libretaContent').style.display = 'block';
                 cargarContactos();
@@ -949,7 +938,6 @@
                 };
 
                 if (inputNuevaFoto.files && inputNuevaFoto.files[0]) {
-                    // Nota: Para simplificar la edición rápida se puede usar directamente del input, o puedes integrarlo con el recortador si deseas.
                     const tempBase64 = await new Promise((resolve) => {
                         const reader = new FileReader();
                         reader.onload = (e) => resolve(e.target.result);
