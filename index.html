@@ -77,7 +77,6 @@
         #cropContainer {
             width: 250px;
             height: 250px;
-            margin: 0 auto;
             position: relative;
             overflow: hidden;
             border-radius: 50%;
@@ -85,13 +84,40 @@
             background-color: #000;
             box-shadow: 0 0 20px rgba(0,0,0,0.8);
             touch-action: none;
+            cursor: grab;
+        }
+        #cropContainer:active {
+            cursor: grabbing;
         }
         #cropCanvas {
             position: absolute;
-            cursor: grab;
+            top: 0;
+            left: 0;
         }
-        #cropCanvas:active {
-            cursor: grabbing;
+        /* Botones de Zoom verticales a la derecha del círculo */
+        .zoom-controls-vertical {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .btn-zoom {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #2b3442;
+            color: var(--accent-color);
+            border: 1px solid var(--accent-color);
+            font-size: 1.1rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .btn-zoom:hover {
+            background-color: var(--accent-color);
+            color: #12161f;
+            transform: scale(1.05);
         }
     </style>
 </head>
@@ -268,7 +294,7 @@
                                     </div>
                                 </div>
 
-                                <!-- SECCIÓN DE FOTOGRAFÍA (CON BOTONES Y VISTA PREVIA CORTADA) -->
+                                <!-- SECCIÓN DE FOTOGRAFÍA -->
                                 <div class="mb-4 p-3 rounded border border-secondary bg-dark text-center">
                                     <label class="form-label text-white fw-bold mb-2 d-block text-start">
                                         <i class="fa-solid fa-camera me-1 text-info"></i> Fotografía del Integrante <span class="text-danger">*</span>
@@ -395,27 +421,21 @@
                     <h5 class="modal-title fs-6 text-info"><i class="fa-solid fa-crop me-2"></i>Ajusta tu Fotografía al Círculo</h5>
                 </div>
                 <div class="modal-body text-center p-4">
-                    <p class="text-light small mb-3">Mueve la imagen con el dedo o arrastrándola con el mouse, y usa los controles para acercar o alejar tu rostro.</p>
+                    <p class="text-light small mb-3">Arrastra la imagen con el mouse o el dedo para centrar tu rostro, y usa los botones <strong>+ / -</strong> para acercar o alejar.</p>
                     
-                    <!-- Contenedor del Círculo Guía -->
-                    <div id="cropContainer">
-                        <canvas id="cropCanvas" width="250" height="250"></canvas>
-                    </div>
-
-                    <!-- Controles de Zoom y Movimiento -->
-                    <div class="mt-4 px-3">
-                        <label class="form-label text-light small fw-bold mb-1"><i class="fa-solid fa-magnifying-glass-plus me-1 text-info"></i> Zoom (+ / -)</label>
-                        <input type="range" class="form-range" id="zoomRange" min="0.2" max="3" step="0.05" value="1">
-                        
-                        <div class="row mt-2">
-                            <div class="col-6">
-                                <label class="form-label text-light small fw-bold mb-1">Izquierda / Derecha</label>
-                                <input type="range" class="form-range" id="posXRange" min="-300" max="300" step="1" value="0">
-                            </div>
-                            <div class="col-6">
-                                <label class="form-label text-light small fw-bold mb-1">Arriba / Abajo</label>
-                                <input type="range" class="form-range" id="posYRange" min="-300" max="300" step="1" value="0">
-                            </div>
+                    <!-- Contenedor del Círculo Guía y Botones de Zoom a la derecha -->
+                    <div class="d-flex justify-content-center align-items-center gap-3 my-2">
+                        <div id="cropContainer">
+                            <canvas id="cropCanvas" width="250" height="250"></canvas>
+                        </div>
+                        <!-- Botones de Zoom Verticales -->
+                        <div class="zoom-controls-vertical">
+                            <button type="button" class="btn-zoom" id="btnZoomIn" title="Acercar (+)">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
+                            <button type="button" class="btn-zoom" id="btnZoomOut" title="Alejar (-)">
+                                <i class="fa-solid fa-minus"></i>
+                            </button>
                         </div>
                     </div>
 
@@ -539,12 +559,16 @@
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     imgLoaded.onload = function() {
+                        // Ajustar tamaño del canvas interno al tamaño real de la imagen para evitar cortes negros
+                        canvas.width = imgLoaded.width;
+                        canvas.height = imgLoaded.height;
+
+                        // Escala inicial para que cubra perfectamente el círculo de 250px
                         scale = Math.max(250 / imgLoaded.width, 250 / imgLoaded.height);
-                        document.getElementById('zoomRange').value = scale;
+                        
+                        // Centrar imagen
                         posX = (250 - imgLoaded.width * scale) / 2;
                         posY = (250 - imgLoaded.height * scale) / 2;
-                        document.getElementById('posXRange').value = posX;
-                        document.getElementById('posYRange').value = posY;
 
                         dibujarCanvas();
                         
@@ -559,31 +583,40 @@
         };
 
         function dibujarCanvas() {
-            ctx.clearRect(0, 0, 250, 250);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = "#FFFFFF";
-            ctx.fillRect(0, 0, 250, 250);
-            ctx.save();
-            ctx.translate(posX, posY);
-            ctx.scale(scale, scale);
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.drawImage(imgLoaded, 0, 0);
-            ctx.restore();
         }
 
-        document.getElementById('zoomRange').addEventListener('input', function(e) {
-            scale = parseFloat(e.target.value);
-            dibujarCanvas();
+        // Aplicar transformaciones mediante estilo CSS en el canvas contenedor para un movimiento fluido
+        function actualizarTransformacionCSS() {
+            canvas.style.transformOrigin = '0 0';
+            canvas.style.transform = `translate(${posX}px, ${posY}px) scale(${scale})`;
+        }
+
+        // Botones de Zoom Verticales (+ / -)
+        document.getElementById('btnZoomIn').addEventListener('click', () => {
+            const oldScale = scale;
+            scale = Math.min(scale * 1.15, 5);
+            // Mantener el centro al hacer zoom
+            posX = 125 - (125 - posX) * (scale / oldScale);
+            posY = 125 - (125 - posY) * (scale / oldScale);
+            actualizarTransformacionCSS();
         });
 
-        document.getElementById('posXRange').addEventListener('input', function(e) {
-            posX = parseInt(e.target.value);
-            dibujarCanvas();
-        });
-        document.getElementById('posYRange').addEventListener('input', function(e) {
-            posY = parseInt(e.target.value);
-            dibujarCanvas();
+        document.getElementById('btnZoomOut').addEventListener('click', () => {
+            const oldScale = scale;
+            scale = Math.max(scale / 1.15, 0.2);
+            posX = 125 - (125 - posX) * (scale / oldScale);
+            posY = 125 - (125 - posY) * (scale / oldScale);
+            actualizarTransformacionCSS();
         });
 
-        canvas.addEventListener('mousedown', (e) => {
+        // Arrastrar imagen libremente con mouse o dedo
+        const cropContainer = document.getElementById('cropContainer');
+
+        cropContainer.addEventListener('mousedown', (e) => {
             isDragging = true;
             startX = e.clientX - posX;
             startY = e.clientY - posY;
@@ -592,13 +625,11 @@
             if (!isDragging) return;
             posX = e.clientX - startX;
             posY = e.clientY - startY;
-            document.getElementById('posXRange').value = posX;
-            document.getElementById('posYRange').value = posY;
-            dibujarCanvas();
+            actualizarTransformacionCSS();
         });
         window.addEventListener('mouseup', () => { isDragging = false; });
 
-        canvas.addEventListener('touchstart', (e) => {
+        cropContainer.addEventListener('touchstart', (e) => {
             if (e.touches.length === 1) {
                 isDragging = true;
                 startX = e.touches[0].clientX - posX;
@@ -609,12 +640,17 @@
             if (!isDragging || e.touches.length !== 1) return;
             posX = e.touches[0].clientX - startX;
             posY = e.touches[0].clientY - startY;
-            document.getElementById('posXRange').value = posX;
-            document.getElementById('posYRange').value = posY;
-            dibujarCanvas();
+            actualizarTransformacionCSS();
         });
         window.addEventListener('touchend', () => { isDragging = false; });
 
+        // Al abrir el modal inicializamos el CSS transform
+        const modalRecorteEl = document.getElementById('modalRecorte');
+        modalRecorteEl.addEventListener('shown.bs.modal', () => {
+            actualizarTransformacionCSS();
+        });
+
+        // Confirmar recorte y generar Base64 circular final
         document.getElementById('btnConfirmarRecorte').addEventListener('click', function() {
             const tempCanvas = document.createElement('canvas');
             tempCanvas.width = 300;
@@ -629,19 +665,20 @@
             tCtx.fillStyle = "#FFFFFF";
             tCtx.fillRect(0, 0, 300, 300);
 
+            // Mapear exactamente la porción visible del contenedor de 250px al canvas final de 300px
+            const factor = 300 / 250;
             tCtx.save();
-            tCtx.translate(posX * (300/250), posY * (300/250));
-            tCtx.scale(scale * (300/250), scale * (300/250));
+            tCtx.translate(posX * factor, posY * factor);
+            tCtx.scale(scale * factor, scale * factor);
             tCtx.drawImage(imgLoaded, 0, 0);
             tCtx.restore();
 
-            fotoBase64Final = tempCanvas.toDataURL('image/jpeg', 0.8);
+            fotoBase64Final = tempCanvas.toDataURL('image/jpeg', 0.85);
 
             document.getElementById('previewAvatarFinal').src = fotoBase64Final;
             document.getElementById('previewContenedor').style.display = 'block';
 
-            const modalEl = document.getElementById('modalRecorte');
-            const modalInstance = bootstrap.Modal.getInstance(modalEl);
+            const modalInstance = bootstrap.Modal.getInstance(modalRecorteEl);
             modalInstance.hide();
         });
 
@@ -778,7 +815,7 @@
             }
         });
 
-        // Autenticación automática con "Mariano123.."
+        // Autenticación con contraseña "Mariano123.."
         const authForm = document.getElementById('authForm');
         authForm.addEventListener('submit', (e) => {
             e.preventDefault();
