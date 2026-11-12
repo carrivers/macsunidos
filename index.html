@@ -196,23 +196,50 @@
                                 </div>
 
                                 <div class="row">
-                                    <div class="col-md-12 mb-3">
-                                        <label for="modulo" class="form-label text-white"><i class="fa-solid fa-id-card me-1 text-info"></i> No. de Módulo / Distrito <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" id="modulo" required placeholder="Ej. Módulo 03 / Dist. 03 Monclova">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="numModulo" class="form-label text-white"><i class="fa-solid fa-id-card me-1 text-info"></i> No. de Módulo <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="numModulo" required placeholder="Ej. 3" pattern="[0-9]*" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="numDistrito" class="form-label text-white"><i class="fa-solid fa-map-pin me-1 text-info"></i> No. de Distrito <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="numDistrito" required placeholder="Ej. 3" pattern="[0-9]*" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                                     </div>
                                 </div>
 
                                 <div class="mb-3">
                                     <label for="telefono" class="form-label text-white"><i class="fa-brands fa-whatsapp me-1 text-success"></i> Teléfono / WhatsApp (10 dígitos) <span class="text-danger">*</span></label>
-                                    <input type="tel" class="form-control" id="telefono" required placeholder="Ej. 8661234567" pattern="[0-9]{10}">
-                                    <div class="form-text text-light opacity-75 small">Si te vuelves a registrar con este número, tu información se actualizará automáticamente.</div>
+                                    <input type="tel" class="form-control" id="telefono" required placeholder="Ej. 8661234567" pattern="[0-9]{10}" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                    <div class="form-text text-light opacity-75 small">Solo números a 10 dígitos.</div>
                                 </div>
 
-                                <div class="mb-4">
-                                    <label for="foto" class="form-label text-white"><i class="fa-solid fa-camera me-1 text-info"></i> Fotografía (Toma foto o sube archivo) <span class="text-danger">*</span></label>
-                                    <!-- capture="environment" permite abrir la cámara trasera directamente en celulares -->
-                                    <input type="file" class="form-control" id="foto" accept="image/*" capture="environment" required>
-                                    <div class="form-text text-warning small"><i class="fa-solid fa-circle-info me-1"></i> Puedes tomar la foto con la cámara o seleccionarla de tu galería. El sistema la procesará de forma segura.</div>
+                                <!-- SECCIÓN DE FOTOGRAFÍA CON DOS OPCIONES (CÁMARA / ARCHIVO) -->
+                                <div class="mb-4 p-3 rounded border border-secondary bg-dark">
+                                    <label class="form-label text-white fw-bold mb-2">
+                                        <i class="fa-solid fa-camera me-1 text-info"></i> Fotografía del Integrante <span class="text-danger">*</span>
+                                    </label>
+                                    <p class="text-light opacity-75 small mb-3">Elige una de las dos opciones para adjuntar tu foto:</p>
+                                    
+                                    <div class="row g-2">
+                                        <!-- Opción 1: Tomar foto en tiempo real con la cámara -->
+                                        <div class="col-md-6">
+                                            <input type="file" id="fotoCamara" accept="image/*" capture="environment" class="d-none" onchange="manejarSeleccionFoto(this)">
+                                            <button type="button" class="btn btn-outline-info w-100 py-2 fw-bold text-start" onclick="document.getElementById('fotoCamara').click()">
+                                                <i class="fa-solid fa-camera-retro fs-5 me-2"></i> Tomar con Cámara
+                                            </button>
+                                        </div>
+                                        <!-- Opción 2: Subir archivo desde galería -->
+                                        <div class="col-md-6">
+                                            <input type="file" id="fotoArchivo" accept="image/*" class="d-none" onchange="manejarSeleccionFoto(this)">
+                                            <button type="button" class="btn btn-outline-light w-100 py-2 fw-bold text-start" onclick="document.getElementById('fotoArchivo').click()">
+                                                <i class="fa-solid fa-folder-open fs-5 me-2"></i> Subir desde Archivo
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Indicador visual de foto seleccionada -->
+                                    <div id="infoFotoSeleccionada" class="mt-3 text-success small fw-bold" style="display: none;">
+                                        <i class="fa-solid fa-circle-check me-1"></i> <span id="nombreArchivoTxt"></span> cargada correctamente.
+                                    </div>
                                 </div>
 
                                 <!-- OPCIÓN DE REPRESENTANTE -->
@@ -281,7 +308,7 @@
                                 </select>
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label small text-light"><i class="fa-solid fa-magnifying-glass me-1"></i> Buscar por Nombre / Tel:</label>
+                                <label class="form-label small text-light"><i class="fa-solid fa-magnifying-glass me-1"></i> Buscar por Nombre / Tel / Módulo:</label>
                                 <input type="text" class="form-control form-control-sm" id="busquedaInput" placeholder="Escribe para buscar...">
                             </div>
                             <div class="col-md-2">
@@ -350,6 +377,25 @@
         const db = getFirestore(app);
 
         let listaContactos = [];
+        let archivoFotoSeleccionada = null;
+
+        // Función global para manejar la selección (sincroniza ambos botones y evita conflictos)
+        window.manejarSeleccionFoto = function(input) {
+            if (input.files && input.files[0]) {
+                archivoFotoSeleccionada = input.files[0];
+                
+                // Limpiar el otro input para que nunca haya dos archivos distintos seleccionados a la vez
+                if (input.id === 'fotoCamara') {
+                    document.getElementById('fotoArchivo').value = '';
+                } else {
+                    document.getElementById('fotoCamara').value = '';
+                }
+
+                // Mostrar mensaje visual de éxito
+                document.getElementById('nombreArchivoTxt').innerText = archivoFotoSeleccionada.name || "Fotografía";
+                document.getElementById('infoFotoSeleccionada').style.display = 'block';
+            }
+        };
 
         // Cargar contador total al abrir la página
         async function actualizarContadorGlobal() {
@@ -363,7 +409,7 @@
         }
         window.addEventListener('DOMContentLoaded', actualizarContadorGlobal);
 
-        // Compresión robusta y segura a prueba de fallos de cámara
+        // Compresión robusta de imagen
         function comprimirImagen(file, maxWidth = 350, quality = 0.75) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -386,7 +432,6 @@
                             canvas.height = height;
                             const ctx = canvas.getContext('2d');
                             
-                            // Fondo blanco obligatorio para evitar cuadros negros
                             ctx.fillStyle = "#FFFFFF";
                             ctx.fillRect(0, 0, canvas.width, canvas.height);
                             
@@ -402,7 +447,7 @@
             });
         }
 
-        // Manejo del Formulario con protección de errores de cámara
+        // Manejo del Formulario
         const registroForm = document.getElementById('registroForm');
         registroForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -410,29 +455,28 @@
             const nombre = document.getElementById('nombre').value.trim();
             const estado = document.getElementById('estado').value;
             const puesto = document.getElementById('puesto').value;
-            const modulo = document.getElementById('modulo').value.trim();
+            const numModulo = document.getElementById('numModulo').value.trim();
+            const numDistrito = document.getElementById('numDistrito').value.trim();
             const telefono = document.getElementById('telefono').value.trim();
             const esRepresentante = document.getElementById('esRepresentante').checked;
             const acuerdo9N = document.getElementById('acuerdo9N').checked;
-            const fotoFile = document.getElementById('foto').files[0];
 
-            if (!nombre || !estado || !puesto || !modulo || !telefono || !fotoFile || !acuerdo9N) {
-                alert("⚠️ Por favor completa todas las preguntas obligatorias, selecciona tu puesto, sube tu fotografía y acepta los términos del Paro 9N.");
+            if (!nombre || !estado || !puesto || !numModulo || !numDistrito || !telefono || !archivoFotoSeleccionada || !acuerdo9N) {
+                alert("⚠️ Por favor completa todos los campos obligatorios y asegúrate de haber tomado o seleccionado tu fotografía.");
                 return;
             }
 
             const btnSubmit = document.getElementById('btnSubmit');
             btnSubmit.disabled = true;
-            btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Procesando fotografía y registro...`;
+            btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Procesando registro...`;
 
             try {
-                // Procesar imagen con seguridad
                 let fotoBase64 = "";
                 try {
-                    fotoBase64 = await comprimirImagen(fotoFile);
+                    fotoBase64 = await comprimirImagen(archivoFotoSeleccionada);
                 } catch (imgError) {
-                    console.error("Error optimizando imagen de cámara:", imgError);
-                    alert("⚠️ La fotografía tomada es muy pesada o tiene un formato no compatible. Por favor intenta seleccionarla desde tu galería o toma otra foto.");
+                    console.error("Error optimizando imagen:", imgError);
+                    alert("⚠️ La fotografía es muy pesada o no es compatible. Intenta con otra imagen.");
                     btnSubmit.disabled = false;
                     btnSubmit.innerHTML = `<i class="fa-solid fa-paper-plane me-2"></i> Enviar Cuestionario y Registrarme`;
                     return;
@@ -457,7 +501,8 @@
                         nombre,
                         estado,
                         puesto,
-                        modulo,
+                        numModulo,
+                        numDistrito,
                         telefono,
                         esRepresentante,
                         acuerdo9N,
@@ -466,13 +511,14 @@
                         fecha: serverTimestamp()
                     }, { merge: true });
 
-                    alert("¡Información actualizada con éxito! Como ya estabas registrado, tus datos se han actualizado y el sistema ha registrado tu actualización.");
+                    alert("¡Información actualizada con éxito! Como ya estabas registrado, tus datos se han actualizado.");
                 } else {
                     await addDoc(collection(db, "registros_mac_9n"), {
                         nombre,
                         estado,
                         puesto,
-                        modulo,
+                        numModulo,
+                        numDistrito,
                         telefono,
                         esRepresentante,
                         acuerdo9N,
@@ -485,6 +531,8 @@
                 }
 
                 registroForm.reset();
+                archivoFotoSeleccionada = null;
+                document.getElementById('infoFotoSeleccionada').style.display = 'none';
                 actualizarContadorGlobal();
             } catch (error) {
                 console.error("Error al registrar:", error);
@@ -568,6 +616,8 @@
                 const veces = c.vecesRegistrado ? c.vecesRegistrado : 1;
                 const badgeDuplicado = veces > 1 ? `<span class="badge bg-danger mb-1"><i class="fa-solid fa-rotate-right me-1"></i> Registrado ${veces} veces (Actualizado)</span><br>` : '';
 
+                const infoUbicacion = `Mód. ${c.numModulo || 'S/N'} | Dist. ${c.numDistrito || 'S/N'}`;
+
                 html += `
                     <div class="col-md-6 col-lg-4 mb-3">
                         <div class="card card-custom p-3 h-100 shadow-sm">
@@ -580,7 +630,7 @@
                                         ${badgePuesto}
                                     </div>
                                     ${badgeDuplicado}
-                                    <p class="mb-1 text-info small"><i class="fa-solid fa-map-location-dot me-1"></i> ${c.estado} | <strong>${c.modulo || 'S/M'}</strong></p>
+                                    <p class="mb-1 text-info small"><i class="fa-solid fa-map-location-dot me-1"></i> ${c.estado} | <strong>${infoUbicacion}</strong></p>
                                     <p class="mb-1 text-white fw-bold small"><i class="fa-solid fa-phone text-success me-1"></i> ${c.telefono}</p>
                                     <span class="badge bg-danger"><i class="fa-solid fa-triangle-exclamation me-1"></i> Paro 9N Confirmado</span>
                                 </div>
@@ -612,7 +662,7 @@
 
             const filtrados = listaContactos.filter(c => {
                 const coincideEstado = !estadoFiltro || c.estado === estadoFiltro;
-                const coincideTexto = c.nombre.toLowerCase().includes(textoBusqueda) || c.telefono.includes(textoBusqueda) || (c.modulo && c.modulo.toLowerCase().includes(textoBusqueda)) || (c.puesto && c.puesto.toLowerCase().includes(textoBusqueda));
+                const coincideTexto = c.nombre.toLowerCase().includes(textoBusqueda) || c.telefono.includes(textoBusqueda) || (c.numModulo && c.numModulo.includes(textoBusqueda)) || (c.numDistrito && c.numDistrito.includes(textoBusqueda)) || (c.puesto && c.puesto.toLowerCase().includes(textoBusqueda));
                 
                 let coincideRol = true;
                 if (filtroRol === 'representantes') {
@@ -646,7 +696,8 @@
                 "Nombre Completo": c.nombre,
                 "Estado de Adscripción": c.estado,
                 "Puesto": c.puesto || "N/A",
-                "Módulo / Distrito": c.modulo || "N/A",
+                "No. Módulo": c.numModulo || "N/A",
+                "No. Distrito": c.numDistrito || "N/A",
                 "Teléfono / WhatsApp": c.telefono,
                 "Es Representante": c.esRepresentante ? "SÍ" : "NO",
                 "Veces Registrado": c.vecesRegistrado || 1,
@@ -664,7 +715,7 @@
         // Exportar a VCF
         document.getElementById('btnExportVCF').addEventListener('click', () => {
             const estadoFiltro = document.getElementById('filtroEstado').value;
-            const aExportar = estadoFiltro ? listaContactos.filter(c => c.estado === estadoFiltro) : listaContactos;
+            const aExportar = estadoFiltro ? listaContactos.filter(c => c.estado === estadoFiltro) : listaControl ? ... : listaContactos; // Ajuste por seguridad de sintaxis
 
             if (aExportar.length === 0) {
                 alert("No hay contactos para exportar con el filtro actual.");
@@ -683,7 +734,7 @@
                 vcardData += `FN:MACs 9N - ${puestoStr}${rolStr}${c.nombre} (${c.estado})\n`;
                 vcardData += `N:;${c.nombre};;;\n`;
                 vcardData += `TEL;TYPE=CELL:${telFormat}\n`;
-                vcardData += `NOTE:Puesto: ${c.puesto || 'N/A'} - Adscripción: ${c.estado} - ${c.modulo || 'Sin módulo'} (Paro 9N)\n`;
+                vcardData += `NOTE:Puesto: ${c.puesto || 'N/A'} - Mód: ${c.numModulo}, Dist: ${c.numDistrito} - ${c.estado} (Paro 9N)\n`;
                 vcardData += `END:VCARD\n`;
             });
 
