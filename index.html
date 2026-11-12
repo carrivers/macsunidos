@@ -42,6 +42,11 @@
             object-fit: cover;
             border-radius: 50%;
             border: 2px solid var(--accent-color);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .avatar-img:hover {
+            transform: scale(1.08);
         }
         .form-control, .form-select {
             background-color: #2b3442;
@@ -302,6 +307,21 @@
         </div>
     </div>
 
+    <!-- MODAL PARA VER LA FOTO EN GRANDE -->
+    <div class="modal fade" id="modalFoto" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-md">
+            <div class="modal-content bg-dark text-white border border-secondary shadow-lg">
+                <div class="modal-header border-bottom border-secondary py-2">
+                    <h5 class="modal-title fs-6"><i class="fa-solid fa-image me-2 text-info"></i>Fotografía del Integrante</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center p-3">
+                    <img id="imgModalAmplia" src="" class="img-fluid rounded shadow" alt="Foto Ampliada" style="max-height: 75vh; object-fit: contain;">
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Firebase SDK v9 modular (CDN) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
@@ -322,7 +342,7 @@
 
         let listaContactos = [];
 
-        // Cargar contador total al abrir la página (sin necesidad de meter contraseña)
+        // Cargar contador total al abrir la página
         async function actualizarContadorGlobal() {
             try {
                 const q = query(collection(db, "registros_mac_9n"));
@@ -334,8 +354,8 @@
         }
         window.addEventListener('DOMContentLoaded', actualizarContadorGlobal);
 
-        // Compresión inteligente de imagen (clara y no pesada)
-        function comprimirImagen(file, maxWidth = 350, quality = 0.75) {
+        // Compresión inteligente de imagen
+        function comprimirImagen(file, maxWidth = 400, quality = 0.8) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
@@ -364,7 +384,7 @@
             });
         }
 
-        // Manejo del Formulario con actualización automática si ya existe el teléfono
+        // Manejo del Formulario
         const registroForm = document.getElementById('registroForm');
         registroForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -509,7 +529,7 @@
             }
 
             let html = '';
-            contactos.forEach(c => {
+            contactos.forEach((c, index) => {
                 const fotoSrc = c.foto ? c.foto : 'https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/svgs/solid/user.svg';
                 const telLimpio = c.telefono.replace(/\D/g, '');
                 const telWa = telLimpio.length === 10 ? `52${telLimpio}` : telLimpio;
@@ -524,7 +544,8 @@
                     <div class="col-md-6 col-lg-4 mb-3">
                         <div class="card card-custom p-3 h-100 shadow-sm">
                             <div class="d-flex align-items-center">
-                                <img src="${fotoSrc}" class="avatar-img me-3 shadow" alt="Foto">
+                                <!-- Imagen con evento para abrir el modal flotante -->
+                                <img src="${fotoSrc}" class="avatar-img me-3 shadow" alt="Foto" title="Clic para ver en grande" onclick="abrirModalFoto('${fotoSrc}')">
                                 <div class="flex-grow-1 overflow-hidden">
                                     <h5 class="mb-1 text-truncate fw-bold">${c.nombre}</h5>
                                     <div>
@@ -548,6 +569,13 @@
                 `;
             });
             container.innerHTML = html;
+        }
+
+        // Función global para abrir la ventana flotante de la foto
+        window.abrirModalFoto = function(urlFoto) {
+            document.getElementById('imgModalAmplia').src = urlFoto;
+            const modal = new bootstrap.Modal(document.getElementById('modalFoto'));
+            modal.show();
         }
 
         function filtrarYBuscar() {
