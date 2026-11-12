@@ -73,6 +73,26 @@
             border-left: 5px solid #dc3545 !important;
             color: #ffffff !important;
         }
+        /* Estilos para el visor de recorte circular */
+        #cropContainer {
+            width: 250px;
+            height: 250px;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+            border-radius: 50%;
+            border: 4px solid var(--accent-color);
+            background-color: #000;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+            touch-action: none;
+        }
+        #cropCanvas {
+            position: absolute;
+            cursor: grab;
+        }
+        #cropCanvas:active {
+            cursor: grabbing;
+        }
     </style>
 </head>
 <body>
@@ -128,7 +148,7 @@
                                     <i class="fa-solid fa-triangle-exclamation text-warning fs-4 me-3 mt-1"></i>
                                     <div>
                                         <strong class="text-warning d-block mb-1 fs-6">Aviso Importante:</strong>
-                                        <span class="text-white" style="line-height: 1.5;">Al llenar y enviar هذا cuestionario, manifiestas tu disposición y compromiso para cooperar y participar activamente en las actividades asociadas al <strong>Paro Nacional 9N de los MAC</strong>.</span>
+                                        <span class="text-white" style="line-height: 1.5;">Al llenar y enviar este cuestionario, manifiestas tu disposición y compromiso para cooperar y participar activamente en las actividades asociadas al <strong>Paro Nacional 9N de los MAC</strong>.</span>
                                     </div>
                                 </div>
                             </div>
@@ -212,42 +232,69 @@
                                     <div class="form-text text-light opacity-75 small">Solo números a 10 dígitos.</div>
                                 </div>
 
-                                <!-- SECCIÓN DE FOTOGRAFÍA CON DOS OPCIONES (CÁMARA / ARCHIVO) -->
+                                <!-- SECCIÓN DE REPRESENTACIÓN -->
                                 <div class="mb-4 p-3 rounded border border-secondary bg-dark">
-                                    <label class="form-label text-white fw-bold mb-2">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="esRepresentante" onchange="toggleBloqueRepresentante(this)">
+                                        <label class="form-check-label text-info fw-bold" for="esRepresentante">
+                                            <i class="fa-solid fa-user-tie me-1"></i> ¿Función de Representante?
+                                        </label>
+                                    </div>
+                                    
+                                    <div id="contenedorDetalleRepresentante" class="mt-3 pt-3 border-top border-secondary" style="display: none;">
+                                        <label class="form-label text-light small fw-bold mb-1">1. Ámbito de Representación:</label>
+                                        <div class="d-flex gap-4 mb-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="ambitoRep" id="ambitoDistrital" value="Distrital">
+                                                <label class="form-check-label text-white small" for="ambitoDistrital">Distrital</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="ambitoRep" id="ambitoEstatal" value="Estatal">
+                                                <label class="form-check-label text-white small" for="ambitoEstatal">Estatal</label>
+                                            </div>
+                                        </div>
+
+                                        <label class="form-label text-light small fw-bold mb-1">2. Tipo de Cargo:</label>
+                                        <div class="d-flex gap-4">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="tipoRep" id="tipoPropietario" value="Propietario">
+                                                <label class="form-check-label text-white small" for="tipoPropietario">Propietario</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="tipoRep" id="tipoSuplente" value="Suplente">
+                                                <label class="form-check-label text-white small" for="tipoSuplente">Suplente</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- SECCIÓN DE FOTOGRAFÍA (CON BOTONES Y VISTA PREVIA CORTADA) -->
+                                <div class="mb-4 p-3 rounded border border-secondary bg-dark text-center">
+                                    <label class="form-label text-white fw-bold mb-2 d-block text-start">
                                         <i class="fa-solid fa-camera me-1 text-info"></i> Fotografía del Integrante <span class="text-danger">*</span>
                                     </label>
-                                    <p class="text-light opacity-75 small mb-3">Elige una de las dos opciones para adjuntar tu foto:</p>
+                                    <p class="text-light opacity-75 small mb-3 text-start">Toma o sube tu foto y ajustala al círculo:</p>
                                     
-                                    <div class="row g-2">
+                                    <div class="row g-2 mb-3">
                                         <div class="col-md-6">
-                                            <input type="file" id="fotoCamara" accept="image/*" capture="environment" class="d-none" onchange="manejarSeleccionFoto(this)">
+                                            <input type="file" id="fotoCamara" accept="image/*" capture="environment" class="d-none" onchange="iniciarProcesoRecorte(this)">
                                             <button type="button" class="btn btn-outline-info w-100 py-2 fw-bold text-start" onclick="document.getElementById('fotoCamara').click()">
                                                 <i class="fa-solid fa-camera-retro fs-5 me-2"></i> Tomar con Cámara
                                             </button>
                                         </div>
                                         <div class="col-md-6">
-                                            <input type="file" id="fotoArchivo" accept="image/*" class="d-none" onchange="manejarSeleccionFoto(this)">
+                                            <input type="file" id="fotoArchivo" accept="image/*" class="d-none" onchange="iniciarProcesoRecorte(this)">
                                             <button type="button" class="btn btn-outline-light w-100 py-2 fw-bold text-start" onclick="document.getElementById('fotoArchivo').click()">
                                                 <i class="fa-solid fa-folder-open fs-5 me-2"></i> Subir desde Archivo
                                             </button>
                                         </div>
                                     </div>
 
-                                    <div id="infoFotoSeleccionada" class="mt-3 text-success small fw-bold" style="display: none;">
-                                        <i class="fa-solid fa-circle-check me-1"></i> <span id="nombreArchivoTxt"></span> cargada correctamente.
+                                    <!-- Resultado de la foto recortada -->
+                                    <div id="previewContenedor" style="display: none;">
+                                        <img id="previewAvatarFinal" src="" class="rounded-circle border border-info shadow mb-2" style="width: 90px; height: 90px; object-fit: cover; background: #fff;" alt="Vista Previa">
+                                        <div class="text-success small fw-bold"><i class="fa-solid fa-circle-check me-1"></i> Fotografía ajustada y lista.</div>
                                     </div>
-                                </div>
-
-                                <!-- OPCIÓN DE REPRESENTANTE -->
-                                <div class="mb-3 p-3 rounded border border-secondary bg-dark">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="esRepresentante">
-                                        <label class="form-check-label text-info fw-bold" for="esRepresentante">
-                                            <i class="fa-solid fa-user-tie me-1"></i> Asignado como Representante
-                                        </label>
-                                    </div>
-                                    <div class="form-text text-light opacity-75 small mt-1">Marca esta casilla únicamente si fuiste designado como representante de módulo o estatal.</div>
                                 </div>
 
                                 <div class="mb-3 form-check">
@@ -340,6 +387,49 @@
         </div>
     </div>
 
+    <!-- MODAL PARA RECORTAR Y AJUSTAR FOTOGRAFÍA -->
+    <div class="modal fade" id="modalRecorte" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark text-white border border-secondary shadow-lg">
+                <div class="modal-header border-bottom border-secondary py-2">
+                    <h5 class="modal-title fs-6 text-info"><i class="fa-solid fa-crop me-2"></i>Ajusta tu Fotografía al Círculo</h5>
+                </div>
+                <div class="modal-body text-center p-4">
+                    <p class="text-light small mb-3">Mueve la imagen con el dedo o arrastrándola con el mouse, y usa los controles para acercar o alejar tu rostro.</p>
+                    
+                    <!-- Contenedor del Círculo Guía -->
+                    <div id="cropContainer">
+                        <canvas id="cropCanvas" width="250" height="250"></canvas>
+                    </div>
+
+                    <!-- Controles de Zoom y Movimiento -->
+                    <div class="mt-4 px-3">
+                        <label class="form-label text-light small fw-bold mb-1"><i class="fa-solid fa-magnifying-glass-plus me-1 text-info"></i> Zoom (+ / -)</label>
+                        <input type="range" class="form-range" id="zoomRange" min="0.2" max="3" step="0.05" value="1">
+                        
+                        <div class="row mt-2">
+                            <div class="col-6">
+                                <label class="form-label text-light small fw-bold mb-1">Izquierda / Derecha</label>
+                                <input type="range" class="form-range" id="posXRange" min="-300" max="300" step="1" value="0">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label text-light small fw-bold mb-1">Arriba / Abajo</label>
+                                <input type="range" class="form-range" id="posYRange" min="-300" max="300" step="1" value="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4 pt-3 border-top border-secondary">
+                        <button type="button" class="btn btn-outline-secondary btn-sm px-3" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-info fw-bold text-dark px-4" id="btnConfirmarRecorte">
+                            <i class="fa-solid fa-check me-1"></i> Aceptar y Guardar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL PARA VER LA FOTO EN GRANDE -->
     <div class="modal fade" id="modalFoto" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-md">
@@ -366,6 +456,14 @@
                 <div class="modal-body p-4">
                     <form id="formEditar">
                         <input type="hidden" id="editIdDoc">
+                        <div class="mb-3 text-center">
+                            <img id="editAvatarPrev" src="" class="rounded-circle border border-info mb-2" style="width: 80px; height: 80px; object-fit: cover; background: #fff;" alt="Foto Actual">
+                            <div><small class="text-muted">Fotografía Actual</small></div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small text-light">Cambiar Fotografía (Opcional):</label>
+                            <input type="file" class="form-control form-control-sm" id="editNuevaFoto" accept="image/*">
+                        </div>
                         <div class="mb-3">
                             <label class="form-label small text-light">Nombre Completo:</label>
                             <input type="text" class="form-control" id="editNombre" required>
@@ -385,7 +483,7 @@
                             <input type="tel" class="form-control" id="editTelefono" required maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                         </div>
                         <div class="d-grid mt-4">
-                            <button type="submit" class="btn btn-info fw-bold text-dark">
+                            <button type="submit" class="btn btn-info fw-bold text-dark" id="btnGuardarEdicion">
                                 <i class="fa-solid fa-floppy-disk me-1"></i> Guardar Cambios
                             </button>
                         </div>
@@ -400,7 +498,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, setDoc, updateDoc, deleteDoc, doc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-        // Configuración Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyD8cJxa_v6DeuPKawD0RRIqkck1JDLN_AA",
             authDomain: "macsunidos.firebaseapp.com",
@@ -414,20 +511,150 @@
         const db = getFirestore(app);
 
         let listaContactos = [];
-        let archivoFotoSeleccionada = null;
+        let fotoBase64Final = "";
 
-        window.manejarSeleccionFoto = function(input) {
-            if (input.files && input.files[0]) {
-                archivoFotoSeleccionada = input.files[0];
-                if (input.id === 'fotoCamara') {
-                    document.getElementById('fotoArchivo').value = '';
-                } else {
-                    document.getElementById('fotoCamara').value = '';
-                }
-                document.getElementById('nombreArchivoTxt').innerText = archivoFotoSeleccionada.name || "Fotografía";
-                document.getElementById('infoFotoSeleccionada').style.display = 'block';
+        // LÓGICA DE RECORTADOR INTERACTIVO CON CANVAS
+        let canvas = document.getElementById('cropCanvas');
+        let ctx = canvas.getContext('2d');
+        let imgLoaded = new Image();
+        let scale = 1;
+        let posX = 0;
+        let posY = 0;
+        let isDragging = false;
+        let startX, startY;
+
+        window.toggleBloqueRepresentante = function(checkbox) {
+            const contenedor = document.getElementById('contenedorDetalleRepresentante');
+            if (checkbox.checked) {
+                contenedor.style.display = 'block';
+            } else {
+                contenedor.style.display = 'none';
+                document.querySelectorAll('input[name="ambitoRep"]').forEach(el => el.checked = false);
+                document.querySelectorAll('input[name="tipoRep"]').forEach(el => el.checked = false);
             }
         };
+
+        // Iniciar proceso al seleccionar archivo o cámara
+        window.iniciarProcesoRecorte = function(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imgLoaded.onload = function() {
+                        // Calcular escala inicial para que cubra el círculo
+                        scale = Math.max(250 / imgLoaded.width, 250 / imgLoaded.height);
+                        document.getElementById('zoomRange').value = scale;
+                        posX = (250 - imgLoaded.width * scale) / 2;
+                        posY = (250 - imgLoaded.height * scale) / 2;
+                        document.getElementById('posXRange').value = posX;
+                        document.getElementById('posYRange').value = posY;
+
+                        dibujarCanvas();
+                        
+                        // Abrir modal de recorte
+                        const modalRecorte = new bootstrap.Modal(document.getElementById('modalRecorte'));
+                        modalRecorte.show();
+                    }
+                    imgLoaded.src = e.target.result;
+                }
+                reader.readAsDataURL(input.files[0]);
+                input.value = ''; // limpiar input
+            }
+        };
+
+        function dibujarCanvas() {
+            ctx.clearRect(0, 0, 250, 250);
+            ctx.fillStyle = "#FFFFFF";
+            ctx.fillRect(0, 0, 250, 250);
+            ctx.save();
+            ctx.translate(posX, posY);
+            ctx.scale(scale, scale);
+            ctx.drawImage(imgLoaded, 0, 0);
+            ctx.restore();
+        }
+
+        // Control deslizante de Zoom
+        document.getElementById('zoomRange').addEventListener('input', function(e) {
+            scale = parseFloat(e.target.value);
+            dibujarCanvas();
+        });
+
+        // Controles de Posición X e Y
+        document.getElementById('posXRange').addEventListener('input', function(e) {
+            posX = parseInt(e.target.value);
+            dibujarCanvas();
+        });
+        document.getElementById('posYRange').addEventListener('input', function(e) {
+            posY = parseInt(e.target.value);
+            dibujarCanvas();
+        });
+
+        // Arrastrar con mouse o dedo en el círculo
+        canvas.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            startX = e.clientX - posX;
+            startY = e.clientY - posY;
+        });
+        window.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            posX = e.clientX - startX;
+            posY = e.clientY - startY;
+            document.getElementById('posXRange').value = posX;
+            document.getElementById('posYRange').value = posY;
+            dibujarCanvas();
+        });
+        window.addEventListener('mouseup', () => { isDragging = false; });
+
+        // Soporte táctil para celulares
+        canvas.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                isDragging = true;
+                startX = e.touches[0].clientX - posX;
+                startY = e.touches[0].clientY - posY;
+            }
+        });
+        window.addEventListener('touchmove', (e) => {
+            if (!isDragging || e.touches.length !== 1) return;
+            posX = e.touches[0].clientX - startX;
+            posY = e.touches[0].clientY - startY;
+            document.getElementById('posXRange').value = posX;
+            document.getElementById('posYRange').value = posY;
+            dibujarCanvas();
+        });
+        window.addEventListener('touchend', () => { isDragging = false; });
+
+        // Confirmar recorte y generar Base64 circular final
+        document.getElementById('btnConfirmarRecorte').addEventListener('click', function() {
+            // Crear canvas temporal circular para exportar imagen redonda limpia
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = 300;
+            tempCanvas.height = 300;
+            const tCtx = tempCanvas.getContext('2d');
+
+            tCtx.beginPath();
+            tCtx.arc(150, 150, 150, 0, Math.PI * 2, true);
+            tCtx.closePath();
+            tCtx.clip();
+
+            tCtx.fillStyle = "#FFFFFF";
+            tCtx.fillRect(0, 0, 300, 300);
+
+            tCtx.save();
+            tCtx.translate(posX * (300/250), posY * (300/250));
+            tCtx.scale(scale * (300/250), scale * (300/250));
+            tCtx.drawImage(imgLoaded, 0, 0);
+            tCtx.restore();
+
+            fotoBase64Final = tempCanvas.toDataURL('image/jpeg', 0.8);
+
+            // Mostrar vista previa en el formulario
+            document.getElementById('previewAvatarFinal').src = fotoBase64Final;
+            document.getElementById('previewContenedor').style.display = 'block';
+
+            // Cerrar modal
+            const modalEl = document.getElementById('modalRecorte');
+            const modalInstance = bootstrap.Modal.getInstance(modalEl);
+            modalInstance.hide();
+        });
 
         async function actualizarContadorGlobal() {
             try {
@@ -440,43 +667,6 @@
         }
         window.addEventListener('DOMContentLoaded', actualizarContadorGlobal);
 
-        function comprimirImagen(file, maxWidth = 350, quality = 0.75) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = event => {
-                    const img = new Image();
-                    img.src = event.target.result;
-                    img.onload = () => {
-                        try {
-                            const canvas = document.createElement('canvas');
-                            let width = img.width;
-                            let height = img.height;
-
-                            if (width > maxWidth) {
-                                height = Math.round((height * maxWidth) / width);
-                                width = maxWidth;
-                            }
-
-                            canvas.width = width;
-                            canvas.height = height;
-                            const ctx = canvas.getContext('2d');
-                            
-                            ctx.fillStyle = "#FFFFFF";
-                            ctx.fillRect(0, 0, canvas.width, canvas.height);
-                            
-                            ctx.drawImage(img, 0, 0, width, height);
-                            resolve(canvas.toDataURL('image/jpeg', quality));
-                        } catch (err) {
-                            reject(err);
-                        }
-                    };
-                    img.onerror = error => reject(error);
-                };
-                reader.onerror = error => reject(error);
-            });
-        }
-
         // Manejo del Formulario
         const registroForm = document.getElementById('registroForm');
         registroForm.addEventListener('submit', async (e) => {
@@ -488,32 +678,60 @@
             const numModulo = document.getElementById('numModulo').value.trim();
             const numDistrito = document.getElementById('numDistrito').value.trim();
             const telefono = document.getElementById('telefono').value.trim();
+            
             const esRepresentante = document.getElementById('esRepresentante').checked;
+            let ambitoRep = "";
+            let tipoRep = "";
+
+            if (esRepresentante) {
+                const ambitoSelected = document.querySelector('input[name="ambitoRep"]:checked');
+                const tipoSelected = document.querySelector('input[name="tipoRep"]:checked');
+
+                if (!ambitoSelected || !tipoSelected) {
+                    alert("⚠️ Si marcas la casilla de representante, debes seleccionar el Ámbito (Distrital o Estatal) y el Tipo de Cargo (Propietario o Suplente).");
+                    return;
+                }
+                ambitoRep = ambitoSelected.value;
+                tipoRep = tipoSelected.value;
+            }
+
             const acuerdo9N = document.getElementById('acuerdo9N').checked;
 
-            if (!nombre || !estado || !puesto || !numModulo || !numDistrito || !telefono || !archivoFotoSeleccionada || !acuerdo9N) {
-                alert("⚠️ Por favor completa todos los campos obligatorios y asegúrate de haber tomado o seleccionado tu fotografía.");
+            if (!nombre || !estado || !puesto || !numModulo || !numDistrito || !telefono || !fotoBase64Final || !acuerdo9N) {
+                alert("⚠️ Por favor completa todos los campos obligatorios y asegúrate de haber ajustado tu fotografía en el círculo.");
                 return;
             }
 
             const btnSubmit = document.getElementById('btnSubmit');
             btnSubmit.disabled = true;
-            btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Procesando registro...`;
+            btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Validando y procesando...`;
 
             try {
-                let fotoBase64 = "";
-                try {
-                    fotoBase64 = await comprimirImagen(archivoFotoSeleccionada);
-                } catch (imgError) {
-                    console.error("Error optimizando imagen:", imgError);
-                    alert("⚠️ La fotografía es muy pesada o no es compatible. Intenta con otra imagen.");
-                    btnSubmit.disabled = false;
-                    btnSubmit.innerHTML = `<i class="fa-solid fa-paper-plane me-2"></i> Enviar Cuestionario y Registrarme`;
-                    return;
-                }
-
                 const q = query(collection(db, "registros_mac_9n"));
                 const querySnapshot = await getDocs(q);
+
+                if (esRepresentante) {
+                    let ocupado = false;
+                    querySnapshot.forEach(docSnap => {
+                        const d = docSnap.data();
+                        if (d.telefono !== telefono && d.esRepresentante === true && d.tipoRep === tipoRep) {
+                            if (ambitoRep === 'Estatal' && d.estado === estado && d.ambitoRep === 'Estatal') {
+                                ocupado = true;
+                            }
+                            if (ambitoRep === 'Distrital' && d.estado === estado && d.numDistrito === numDistrito && d.ambitoRep === 'Distrital') {
+                                ocupado = true;
+                            }
+                        }
+                    });
+
+                    if (ocupado) {
+                        alert(`❌ Lo sentimos, ya existe un representante "${tipoRep}" de nivel "${ambitoRep}" registrado en ${ambitoRep === 'Distrital' ? 'este Distrito' : 'este Estado'}. Solo se permite 1 por demarcación.`);
+                        btnSubmit.disabled = false;
+                        btnSubmit.innerHTML = `<i class="fa-solid fa-paper-plane me-2"></i> Enviar Cuestionario y Registrarme`;
+                        return;
+                    }
+                }
+
                 let docExistenteId = null;
                 let vecesActuales = 0;
 
@@ -525,44 +743,42 @@
                     }
                 });
 
+                const payloadData = {
+                    nombre,
+                    estado,
+                    puesto,
+                    numModulo,
+                    numDistrito,
+                    telefono,
+                    esRepresentante,
+                    ambitoRep,
+                    tipoRep,
+                    acuerdo9N,
+                    foto: fotoBase64Final,
+                    fecha: serverTimestamp()
+                };
+
                 if (docExistenteId) {
                     const docRef = doc(db, "registros_mac_9n", docExistenteId);
                     await setDoc(docRef, {
-                        nombre,
-                        estado,
-                        puesto,
-                        numModulo,
-                        numDistrito,
-                        telefono,
-                        esRepresentante,
-                        acuerdo9N,
-                        foto: fotoBase64,
-                        vecesRegistrado: vecesActuales + 1,
-                        fecha: serverTimestamp()
+                        ...payloadData,
+                        vecesRegistrado: vecesActuales + 1
                     }, { merge: true });
 
                     alert("¡Información actualizada con éxito! Como ya estabas registrado, tus datos se han actualizado.");
                 } else {
                     await addDoc(collection(db, "registros_mac_9n"), {
-                        nombre,
-                        estado,
-                        puesto,
-                        numModulo,
-                        numDistrito,
-                        telefono,
-                        esRepresentante,
-                        acuerdo9N,
-                        foto: fotoBase64,
-                        vecesRegistrado: 1,
-                        fecha: serverTimestamp()
+                        ...payloadData,
+                        vecesRegistrado: 1
                     });
 
                     alert("¡Muchas gracias por tu registro! Te avisaremos los cambios a la brevedad, mantente al pendiente.");
                 }
 
                 registroForm.reset();
-                archivoFotoSeleccionada = null;
-                document.getElementById('infoFotoSeleccionada').style.display = 'none';
+                fotoBase64Final = "";
+                document.getElementById('previewContenedor').style.display = 'none';
+                document.getElementById('contenedorDetalleRepresentante').style.display = 'none';
                 actualizarContadorGlobal();
             } catch (error) {
                 console.error("Error al registrar:", error);
@@ -588,7 +804,6 @@
             }
         });
 
-        // Cargar contactos desde Firebase
         async function cargarContactos() {
             const container = document.getElementById('contactosContainer');
             container.innerHTML = `<div class="text-center py-5"><div class="spinner-border text-info" role="status"></div><p class="mt-2 text-muted">Cargando directorio nacional...</p></div>`;
@@ -641,12 +856,17 @@
                 const telWa = telLimpio.length === 10 ? `52${telLimpio}` : telLimpio;
                 const msgWa = encodeURIComponent(`¡Hola ${c.nombre || 'Compañero'}! Te saludamos desde la coordinación de MACs Unidos. Gracias por sumarte al Paro Nacional 9N.`);
 
-                const badgeRepresentante = c.esRepresentante ? `<span class="badge bg-warning text-dark mb-1"><i class="fa-solid fa-user-tie me-1"></i> Representante</span> ` : '';
+                let badgeRep = '';
+                if (c.esRepresentante && c.ambitoRep && c.tipoRep) {
+                    badgeRep = `<span class="badge bg-warning text-dark mb-1"><i class="fa-solid fa-user-tie me-1"></i> ${c.ambitoRep} - ${c.tipoRep}</span> `;
+                } else if (c.esRepresentante) {
+                    badgeRep = `<span class="badge bg-warning text-dark mb-1"><i class="fa-solid fa-user-tie me-1"></i> Representante</span> `;
+                }
+
                 const badgePuesto = c.puesto ? `<span class="badge bg-primary mb-1">${c.puesto}</span> ` : '';
                 const veces = c.vecesRegistrado ? c.vecesRegistrado : 1;
-                const badgeDuplicado = veces > 1 ? `<span class="badge bg-danger mb-1"><i class="fa-solid fa-rotate-right me-1"></i> Registrado ${veces} veces (Actualizado)</span><br>` : '';
+                const badgeDuplicado = veces > 1 ? `<span class="badge bg-danger mb-1"><i class="fa-solid fa-rotate-right me-1"></i> Registrado ${veces} veces</span><br>` : '';
 
-                // Si no tienen numModulo o numDistrito (por ser registros antiguos), mostrar indicativo para actualizar
                 const moduloVal = c.numModulo || c.modulo || 'S/N';
                 const distritoVal = c.numDistrito || 'S/N';
                 const infoUbicacion = `Mód. ${moduloVal} | Dist. ${distritoVal}`;
@@ -654,7 +874,6 @@
                 html += `
                     <div class="col-md-6 col-lg-4 mb-3" id="card-${c.id}">
                         <div class="card card-custom p-3 h-100 shadow-sm position-relative">
-                            <!-- Botones de Edición y Eliminación en la esquina superior -->
                             <div class="position-absolute top-0 end-0 m-2 d-flex gap-1">
                                 <button class="btn btn-sm btn-outline-info border-0" title="Editar registro" onclick="abrirModalEditar('${c.id}')">
                                     <i class="fa-solid fa-pen-to-square"></i>
@@ -669,7 +888,7 @@
                                 <div class="flex-grow-1 overflow-hidden">
                                     <h5 class="mb-1 text-truncate fw-bold">${c.nombre}</h5>
                                     <div>
-                                        ${badgeRepresentante}
+                                        ${badgeRep}
                                         ${badgePuesto}
                                     </div>
                                     ${badgeDuplicado}
@@ -691,7 +910,6 @@
             container.innerHTML = html;
         }
 
-        // FUNCIONES DE EDICIÓN
         window.abrirModalEditar = function(idDoc) {
             const contacto = listaContactos.find(c => c.id === idDoc);
             if (!contacto) return;
@@ -701,6 +919,8 @@
             document.getElementById('editNumModulo').value = contacto.numModulo || contacto.modulo || '';
             document.getElementById('editNumDistrito').value = contacto.numDistrito || '';
             document.getElementById('editTelefono').value = contacto.telefono || '';
+            document.getElementById('editAvatarPrev').src = contacto.foto || 'https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/svgs/solid/user.svg';
+            document.getElementById('editNuevaFoto').value = '';
 
             const modal = new bootstrap.Modal(document.getElementById('modalEditar'));
             modal.show();
@@ -714,26 +934,44 @@
             const nuevoModulo = document.getElementById('editNumModulo').value.trim();
             const nuevoDistrito = document.getElementById('editNumDistrito').value.trim();
             const nuevoTelefono = document.getElementById('editTelefono').value.trim();
+            const inputNuevaFoto = document.getElementById('editNuevaFoto');
+
+            const btnGuardar = document.getElementById('btnGuardarEdicion');
+            btnGuardar.disabled = true;
+            btnGuardar.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> Guardando...`;
 
             try {
-                const docRef = doc(db, "registros_mac_9n", idDoc);
-                await updateDoc(docRef, {
+                let datosActualizar = {
                     nombre: nuevoNombre,
                     numModulo: nuevoModulo,
                     numDistrito: nuevoDistrito,
                     telefono: nuevoTelefono
-                });
+                };
 
-                // Actualizar en memoria local
+                if (inputNuevaFoto.files && inputNuevaFoto.files[0]) {
+                    // Nota: Para simplificar la edición rápida se puede usar directamente del input, o puedes integrarlo con el recortador si deseas.
+                    const tempBase64 = await new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onload = (e) => resolve(e.target.result);
+                        reader.readAsDataURL(inputNuevaFoto.files[0]);
+                    });
+                    datosActualizar.foto = tempBase64;
+                }
+
+                const docRef = doc(db, "registros_mac_9n", idDoc);
+                await updateDoc(docRef, datosActualizar);
+
                 const index = listaContactos.findIndex(c => c.id === idDoc);
                 if (index !== -1) {
                     listaContactos[index].nombre = nuevoNombre;
                     listaContactos[index].numModulo = nuevoModulo;
                     listaContactos[index].numDistrito = nuevoDistrito;
                     listaContactos[index].telefono = nuevoTelefono;
+                    if (datosActualizar.foto) {
+                        listaContactos[index].foto = datosActualizar.foto;
+                    }
                 }
 
-                // Cerrar modal y refrescar vista
                 const modalEl = document.getElementById('modalEditar');
                 const modalInstance = bootstrap.Modal.getInstance(modalEl);
                 modalInstance.hide();
@@ -743,6 +981,9 @@
             } catch (error) {
                 console.error("Error al actualizar:", error);
                 alert("Hubo un error al actualizar el registro en Firebase.");
+            } finally {
+                btnGuardar.disabled = false;
+                btnGuardar.innerHTML = `<i class="fa-solid fa-floppy-disk me-1"></i> Guardar Cambios`;
             }
         });
 
@@ -819,6 +1060,8 @@
                 "No. Distrito": c.numDistrito || "N/A",
                 "Teléfono / WhatsApp": c.telefono,
                 "Es Representante": c.esRepresentante ? "SÍ" : "NO",
+                "Ámbito": c.ambitoRep || "N/A",
+                "Cargo": c.tipoRep || "N/A",
                 "Veces Registrado": c.vecesRegistrado || 1,
                 "Paro 9N Confirmado": c.acuerdo9N ? "SÍ" : "NO"
             }));
@@ -845,12 +1088,12 @@
             aExportar.forEach(c => {
                 const telLimpio = c.telefono ? c.telefono.replace(/\D/g, '') : '';
                 const telFormat = telLimpio.length === 10 ? `+52${telLimpio}` : `+${telLimpio}`;
-                const rolStr = c.esRepresentante ? '[REPRESENTANTE] ' : '';
+                const repStr = c.esRepresentante ? `[REP ${c.ambitoRep || ''} - ${c.tipoRep || ''}] ` : '';
                 const puestoStr = c.puesto ? `[${c.puesto}] ` : '';
                 
                 vcardData += `BEGIN:VCARD\n`;
                 vcardData += `VERSION:3.0\n`;
-                vcardData += `FN:MACs 9N - ${puestoStr}${rolStr}${c.nombre} (${c.estado})\n`;
+                vcardData += `FN:MACs 9N - ${puestoStr}${repStr}${c.nombre} (${c.estado})\n`;
                 vcardData += `N:;${c.nombre};;;\n`;
                 vcardData += `TEL;TYPE=CELL:${telFormat}\n`;
                 vcardData += `NOTE:Puesto: ${c.puesto || 'N/A'} - Mód: ${c.numModulo || c.modulo || 'N/A'}, Dist: ${c.numDistrito || 'N/A'} - ${c.estado} (Paro 9N)\n`;
