@@ -220,14 +220,12 @@
                                     <p class="text-light opacity-75 small mb-3">Elige una de las dos opciones para adjuntar tu foto:</p>
                                     
                                     <div class="row g-2">
-                                        <!-- Opción 1: Tomar foto en tiempo real con la cámara -->
                                         <div class="col-md-6">
                                             <input type="file" id="fotoCamara" accept="image/*" capture="environment" class="d-none" onchange="manejarSeleccionFoto(this)">
                                             <button type="button" class="btn btn-outline-info w-100 py-2 fw-bold text-start" onclick="document.getElementById('fotoCamara').click()">
                                                 <i class="fa-solid fa-camera-retro fs-5 me-2"></i> Tomar con Cámara
                                             </button>
                                         </div>
-                                        <!-- Opción 2: Subir archivo desde galería -->
                                         <div class="col-md-6">
                                             <input type="file" id="fotoArchivo" accept="image/*" class="d-none" onchange="manejarSeleccionFoto(this)">
                                             <button type="button" class="btn btn-outline-light w-100 py-2 fw-bold text-start" onclick="document.getElementById('fotoArchivo').click()">
@@ -236,7 +234,6 @@
                                         </div>
                                     </div>
 
-                                    <!-- Indicador visual de foto seleccionada -->
                                     <div id="infoFotoSeleccionada" class="mt-3 text-success small fw-bold" style="display: none;">
                                         <i class="fa-solid fa-circle-check me-1"></i> <span id="nombreArchivoTxt"></span> cargada correctamente.
                                     </div>
@@ -361,7 +358,7 @@
     <!-- Firebase SDK v9 modular (CDN) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, setDoc, doc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, setDoc, deleteDoc, doc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
         // Configuración Firebase
         const firebaseConfig = {
@@ -379,25 +376,19 @@
         let listaContactos = [];
         let archivoFotoSeleccionada = null;
 
-        // Función global para manejar la selección (sincroniza ambos botones y evita conflictos)
         window.manejarSeleccionFoto = function(input) {
             if (input.files && input.files[0]) {
                 archivoFotoSeleccionada = input.files[0];
-                
-                // Limpiar el otro input para que nunca haya dos archivos distintos seleccionados a la vez
                 if (input.id === 'fotoCamara') {
                     document.getElementById('fotoArchivo').value = '';
                 } else {
                     document.getElementById('fotoCamara').value = '';
                 }
-
-                // Mostrar mensaje visual de éxito
                 document.getElementById('nombreArchivoTxt').innerText = archivoFotoSeleccionada.name || "Fotografía";
                 document.getElementById('infoFotoSeleccionada').style.display = 'block';
             }
         };
 
-        // Cargar contador total al abrir la página
         async function actualizarContadorGlobal() {
             try {
                 const q = query(collection(db, "registros_mac_9n"));
@@ -409,7 +400,6 @@
         }
         window.addEventListener('DOMContentLoaded', actualizarContadorGlobal);
 
-        // Compresión robusta de imagen
         function comprimirImagen(file, maxWidth = 350, quality = 0.75) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -619,9 +609,14 @@
                 const infoUbicacion = `Mód. ${c.numModulo || 'S/N'} | Dist. ${c.numDistrito || 'S/N'}`;
 
                 html += `
-                    <div class="col-md-6 col-lg-4 mb-3">
-                        <div class="card card-custom p-3 h-100 shadow-sm">
-                            <div class="d-flex align-items-center">
+                    <div class="col-md-6 col-lg-4 mb-3" id="card-${c.id}">
+                        <div class="card card-custom p-3 h-100 shadow-sm position-relative">
+                            <!-- Botón de eliminar en la esquina superior derecha -->
+                            <button class="position-absolute top-0 end-0 m-2 btn btn-sm btn-outline-danger border-0" title="Eliminar registro" onclick="eliminarRegistro('${c.id}', '${c.nombre.replace(/'/g, "")}')">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+
+                            <div class="d-flex align-items-center pe-4">
                                 <img src="${fotoSrc}" class="avatar-img me-3 shadow" alt="Foto" title="Clic para ver en grande" onclick="abrirModalFoto('${fotoSrc}')">
                                 <div class="flex-grow-1 overflow-hidden">
                                     <h5 class="mb-1 text-truncate fw-bold">${c.nombre}</h5>
@@ -647,6 +642,31 @@
             });
             container.innerHTML = html;
         }
+
+        // Función para eliminar un registro de Firebase y de la pantalla
+        window.eliminarRegistro = async function(idDoc, nombrePersona) {
+            const confirmar = confirm(`⚠️ ¿Estás seguro de eliminar permanentemente el registro de "${nombrePersona}"?\n\nEsta acción lo borrará de Firebase y ya no aparecerá en el directorio.`);
+            
+            if (!confirmar) return;
+
+            try {
+                // Borrar documento de Firestore
+                await deleteDoc(doc(db, "registros_mac_9n", idDoc));
+
+                // Remover de la lista local en memoria
+                listaContactos = listaContactos.filter(c => c.id !== idDoc);
+
+                // Actualizar la vista y contadores
+                poblarFiltroEstados();
+                filtrarYBuscar();
+                actualizarContadorGlobal();
+
+                alert("🗑️ El registro ha sido eliminado correctamente.");
+            } catch (error) {
+                console.error("Error al eliminar el registro:", error);
+                alert("Hubo un error al intentar eliminar el registro de Firebase. Verifica tu conexión.");
+            }
+        };
 
         // Función global para abrir la ventana flotante de la foto
         window.abrirModalFoto = function(urlFoto) {
@@ -715,7 +735,7 @@
         // Exportar a VCF
         document.getElementById('btnExportVCF').addEventListener('click', () => {
             const estadoFiltro = document.getElementById('filtroEstado').value;
-            const aExportar = estadoFiltro ? listaContactos.filter(c => c.estado === estadoFiltro) : listaControl ? ... : listaContactos; // Ajuste por seguridad de sintaxis
+            const aExportar = estadoFiltro ? listaContactos.filter(c => c.estado === estadoFiltro) : listaContactos;
 
             if (aExportar.length === 0) {
                 alert("No hay contactos para exportar con el filtro actual.");
