@@ -13,6 +13,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SheetJS (Librería para exportar a Excel) -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     
     <style>
         :root {
@@ -280,17 +282,22 @@
                                 <label class="form-label small text-light"><i class="fa-solid fa-magnifying-glass me-1"></i> Buscar por Nombre / Tel:</label>
                                 <input type="text" class="form-control form-control-sm" id="busquedaInput" placeholder="Escribe para buscar...">
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <label class="form-label small text-light"><i class="fa-solid fa-user-tie me-1 text-info"></i> Rol:</label>
                                 <select class="form-select form-select-sm" id="filtroRol">
-                                    <option value="todos">Todos los registros</option>
-                                    <option value="representantes">Solo Representantes</option>
-                                    <option value="duplicados">Registrados > 1 vez</option>
+                                    <option value="todos">Todos</option>
+                                    <option value="representantes">Representantes</option>
+                                    <option value="duplicados">Registrados > 1</option>
                                 </select>
                             </div>
-                            <div class="col-md-3 text-md-end mt-4">
+                            <div class="col-md-2 mt-4">
                                 <button class="btn btn-success btn-sm fw-bold w-100" id="btnExportVCF">
-                                    <i class="fa-solid fa-file-arrow-down me-1"></i> Descargar Contactos (.vcf)
+                                    <i class="fa-solid fa-file-arrow-down me-1"></i> .vcf (Celular)
+                                </button>
+                            </div>
+                            <div class="col-md-2 mt-4">
+                                <button class="btn btn-warning btn-sm fw-bold text-dark w-100" id="btnExportExcel">
+                                    <i class="fa-solid fa-file-excel me-1"></i> Exportar Excel
                                 </button>
                             </div>
                         </div>
@@ -529,7 +536,7 @@
             }
 
             let html = '';
-            contactos.forEach((c, index) => {
+            contactos.forEach((c) => {
                 const fotoSrc = c.foto ? c.foto : 'https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/svgs/solid/user.svg';
                 const telLimpio = c.telefono.replace(/\D/g, '');
                 const telWa = telLimpio.length === 10 ? `52${telLimpio}` : telLimpio;
@@ -544,7 +551,6 @@
                     <div class="col-md-6 col-lg-4 mb-3">
                         <div class="card card-custom p-3 h-100 shadow-sm">
                             <div class="d-flex align-items-center">
-                                <!-- Imagen con evento para abrir el modal flotante -->
                                 <img src="${fotoSrc}" class="avatar-img me-3 shadow" alt="Foto" title="Clic para ver en grande" onclick="abrirModalFoto('${fotoSrc}')">
                                 <div class="flex-grow-1 overflow-hidden">
                                     <h5 class="mb-1 text-truncate fw-bold">${c.nombre}</h5>
@@ -554,7 +560,7 @@
                                     </div>
                                     ${badgeDuplicado}
                                     <p class="mb-1 text-info small"><i class="fa-solid fa-map-location-dot me-1"></i> ${c.estado} | <strong>${c.modulo || 'S/M'}</strong></p>
-                                    <p class="mb-1 text-muted small"><i class="fa-solid fa-phone me-1"></i> ${c.telefono}</p>
+                                    <p class="mb-1 text-white fw-bold small"><i class="fa-solid fa-phone text-success me-1"></i> ${c.telefono}</p>
                                     <span class="badge bg-danger"><i class="fa-solid fa-triangle-exclamation me-1"></i> Paro 9N Confirmado</span>
                                 </div>
                             </div>
@@ -604,6 +610,36 @@
         document.getElementById('busquedaInput').addEventListener('input', filtrarYBuscar);
         document.getElementById('filtroRol').addEventListener('change', filtrarYBuscar);
 
+        // EXPORTAR A EXCEL (.xlsx)
+        document.getElementById('btnExportExcel').addEventListener('click', () => {
+            const estadoFiltro = document.getElementById('filtroEstado').value;
+            const aExportar = estadoFiltro ? listaContactos.filter(c => c.estado === estadoFiltro) : listaContactos;
+
+            if (aExportar.length === 0) {
+                alert("No hay registros para exportar con el filtro actual.");
+                return;
+            }
+
+            const datosExcel = aExportar.map((c, index) => ({
+                "No.": index + 1,
+                "Nombre Completo": c.nombre,
+                "Estado de Adscripción": c.estado,
+                "Puesto": c.puesto || "N/A",
+                "Módulo / Distrito": c.modulo || "N/A",
+                "Teléfono / WhatsApp": c.telefono,
+                "Es Representante": c.esRepresentante ? "SÍ" : "NO",
+                "Veces Registrado": c.vecesRegistrado || 1,
+                "Paro 9N Confirmado": c.acuerdo9N ? "SÍ" : "NO"
+            }));
+
+            const worksheet = XLSX.utils.json_to_sheet(datosExcel);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Registros MACs 9N");
+
+            const nombreArchivo = `Directorio_MACs_9N_${estadoFiltro || 'Nacional'}.xlsx`;
+            XLSX.writeFile(workbook, nombreArchivo);
+        });
+
         // Exportar a VCF
         document.getElementById('btnExportVCF').addEventListener('click', () => {
             const estadoFiltro = document.getElementById('filtroEstado').value;
@@ -648,7 +684,7 @@
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
+                navigator.serviceWorker.register('./sw.gif' || './sw.js')
                     .catch((err) => console.log('Error Service Worker', err));
             });
         }
