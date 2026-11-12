@@ -128,7 +128,7 @@
                                     <i class="fa-solid fa-triangle-exclamation text-warning fs-4 me-3 mt-1"></i>
                                     <div>
                                         <strong class="text-warning d-block mb-1 fs-6">Aviso Importante:</strong>
-                                        <span class="text-white" style="line-height: 1.5;">Al llenar y enviar este cuestionario, manifiestas tu disposición y compromiso para cooperar y participar activamente en las actividades asociadas al <strong>Paro Nacional 9N de los MAC</strong>.</span>
+                                        <span class="text-white" style="line-height: 1.5;">Al llenar y enviar هذا cuestionario, manifiestas tu disposición y compromiso para cooperar y participar activamente en las actividades asociadas al <strong>Paro Nacional 9N de los MAC</strong>.</span>
                                     </div>
                                 </div>
                             </div>
@@ -355,10 +355,50 @@
         </div>
     </div>
 
+    <!-- MODAL PARA EDITAR REGISTRO -->
+    <div class="modal fade" id="modalEditar" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark text-white border border-secondary shadow-lg">
+                <div class="modal-header border-bottom border-secondary py-2">
+                    <h5 class="modal-title fs-6 text-info"><i class="fa-solid fa-pen-to-square me-2"></i>Editar Datos del Integrante</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="formEditar">
+                        <input type="hidden" id="editIdDoc">
+                        <div class="mb-3">
+                            <label class="form-label small text-light">Nombre Completo:</label>
+                            <input type="text" class="form-control" id="editNombre" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label small text-light">No. de Módulo:</label>
+                                <input type="text" class="form-control" id="editNumModulo" required pattern="[0-9]*" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label small text-light">No. de Distrito:</label>
+                                <input type="text" class="form-control" id="editNumDistrito" required pattern="[0-9]*" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small text-light">Teléfono / WhatsApp:</label>
+                            <input type="tel" class="form-control" id="editTelefono" required maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                        </div>
+                        <div class="d-grid mt-4">
+                            <button type="submit" class="btn btn-info fw-bold text-dark">
+                                <i class="fa-solid fa-floppy-disk me-1"></i> Guardar Cambios
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Firebase SDK v9 modular (CDN) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, setDoc, deleteDoc, doc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, setDoc, updateDoc, deleteDoc, doc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
         // Configuración Firebase
         const firebaseConfig = {
@@ -533,7 +573,7 @@
             }
         });
 
-        // Autenticación de la Libreta
+        // Autenticación automática con "charro"
         const authForm = document.getElementById('authForm');
         authForm.addEventListener('submit', (e) => {
             e.preventDefault();
@@ -597,26 +637,34 @@
             let html = '';
             contactos.forEach((c) => {
                 const fotoSrc = c.foto ? c.foto : 'https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/svgs/solid/user.svg';
-                const telLimpio = c.telefono.replace(/\D/g, '');
+                const telLimpio = c.telefono ? c.telefono.replace(/\D/g, '') : '';
                 const telWa = telLimpio.length === 10 ? `52${telLimpio}` : telLimpio;
-                const msgWa = encodeURIComponent(`¡Hola ${c.nombre}! Te saludamos desde la coordinación de MACs Unidos. Gracias por sumarte al Paro Nacional 9N.`);
+                const msgWa = encodeURIComponent(`¡Hola ${c.nombre || 'Compañero'}! Te saludamos desde la coordinación de MACs Unidos. Gracias por sumarte al Paro Nacional 9N.`);
 
                 const badgeRepresentante = c.esRepresentante ? `<span class="badge bg-warning text-dark mb-1"><i class="fa-solid fa-user-tie me-1"></i> Representante</span> ` : '';
                 const badgePuesto = c.puesto ? `<span class="badge bg-primary mb-1">${c.puesto}</span> ` : '';
                 const veces = c.vecesRegistrado ? c.vecesRegistrado : 1;
                 const badgeDuplicado = veces > 1 ? `<span class="badge bg-danger mb-1"><i class="fa-solid fa-rotate-right me-1"></i> Registrado ${veces} veces (Actualizado)</span><br>` : '';
 
-                const infoUbicacion = `Mód. ${c.numModulo || 'S/N'} | Dist. ${c.numDistrito || 'S/N'}`;
+                // Si no tienen numModulo o numDistrito (por ser registros antiguos), mostrar indicativo para actualizar
+                const moduloVal = c.numModulo || c.modulo || 'S/N';
+                const distritoVal = c.numDistrito || 'S/N';
+                const infoUbicacion = `Mód. ${moduloVal} | Dist. ${distritoVal}`;
 
                 html += `
                     <div class="col-md-6 col-lg-4 mb-3" id="card-${c.id}">
                         <div class="card card-custom p-3 h-100 shadow-sm position-relative">
-                            <!-- Botón de eliminar en la esquina superior derecha -->
-                            <button class="position-absolute top-0 end-0 m-2 btn btn-sm btn-outline-danger border-0" title="Eliminar registro" onclick="eliminarRegistro('${c.id}', '${c.nombre.replace(/'/g, "")}')">
-                                <i class="fa-solid fa-trash-can"></i>
-                            </button>
+                            <!-- Botones de Edición y Eliminación en la esquina superior -->
+                            <div class="position-absolute top-0 end-0 m-2 d-flex gap-1">
+                                <button class="btn btn-sm btn-outline-info border-0" title="Editar registro" onclick="abrirModalEditar('${c.id}')">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger border-0" title="Eliminar registro" onclick="eliminarRegistro('${c.id}', '${(c.nombre || '').replace(/'/g, "")}')">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </div>
 
-                            <div class="d-flex align-items-center pe-4">
+                            <div class="d-flex align-items-center pe-5">
                                 <img src="${fotoSrc}" class="avatar-img me-3 shadow" alt="Foto" title="Clic para ver en grande" onclick="abrirModalFoto('${fotoSrc}')">
                                 <div class="flex-grow-1 overflow-hidden">
                                     <h5 class="mb-1 text-truncate fw-bold">${c.nombre}</h5>
@@ -626,7 +674,7 @@
                                     </div>
                                     ${badgeDuplicado}
                                     <p class="mb-1 text-info small"><i class="fa-solid fa-map-location-dot me-1"></i> ${c.estado} | <strong>${infoUbicacion}</strong></p>
-                                    <p class="mb-1 text-white fw-bold small"><i class="fa-solid fa-phone text-success me-1"></i> ${c.telefono}</p>
+                                    <p class="mb-1 text-white fw-bold small"><i class="fa-solid fa-phone text-success me-1"></i> ${c.telefono || 'S/N'}</p>
                                     <span class="badge bg-danger"><i class="fa-solid fa-triangle-exclamation me-1"></i> Paro 9N Confirmado</span>
                                 </div>
                             </div>
@@ -643,24 +691,72 @@
             container.innerHTML = html;
         }
 
-        // Función para eliminar un registro de Firebase y de la pantalla
+        // FUNCIONES DE EDICIÓN
+        window.abrirModalEditar = function(idDoc) {
+            const contacto = listaContactos.find(c => c.id === idDoc);
+            if (!contacto) return;
+
+            document.getElementById('editIdDoc').value = contacto.id;
+            document.getElementById('editNombre').value = contacto.nombre || '';
+            document.getElementById('editNumModulo').value = contacto.numModulo || contacto.modulo || '';
+            document.getElementById('editNumDistrito').value = contacto.numDistrito || '';
+            document.getElementById('editTelefono').value = contacto.telefono || '';
+
+            const modal = new bootstrap.Modal(document.getElementById('modalEditar'));
+            modal.show();
+        };
+
+        const formEditar = document.getElementById('formEditar');
+        formEditar.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const idDoc = document.getElementById('editIdDoc').value;
+            const nuevoNombre = document.getElementById('editNombre').value.trim();
+            const nuevoModulo = document.getElementById('editNumModulo').value.trim();
+            const nuevoDistrito = document.getElementById('editNumDistrito').value.trim();
+            const nuevoTelefono = document.getElementById('editTelefono').value.trim();
+
+            try {
+                const docRef = doc(db, "registros_mac_9n", idDoc);
+                await updateDoc(docRef, {
+                    nombre: nuevoNombre,
+                    numModulo: nuevoModulo,
+                    numDistrito: nuevoDistrito,
+                    telefono: nuevoTelefono
+                });
+
+                // Actualizar en memoria local
+                const index = listaContactos.findIndex(c => c.id === idDoc);
+                if (index !== -1) {
+                    listaContactos[index].nombre = nuevoNombre;
+                    listaContactos[index].numModulo = nuevoModulo;
+                    listaContactos[index].numDistrito = nuevoDistrito;
+                    listaContactos[index].telefono = nuevoTelefono;
+                }
+
+                // Cerrar modal y refrescar vista
+                const modalEl = document.getElementById('modalEditar');
+                const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                modalInstance.hide();
+
+                filtrarYBuscar();
+                alert("✅ Registro actualizado correctamente.");
+            } catch (error) {
+                console.error("Error al actualizar:", error);
+                alert("Hubo un error al actualizar el registro en Firebase.");
+            }
+        });
+
         window.eliminarRegistro = async function(idDoc, nombrePersona) {
             const confirmar = confirm(`⚠️ ¿Estás seguro de eliminar permanentemente el registro de "${nombrePersona}"?\n\nEsta acción lo borrará de Firebase y ya no aparecerá en el directorio.`);
             
             if (!confirmar) return;
 
             try {
-                // Borrar documento de Firestore
                 await deleteDoc(doc(db, "registros_mac_9n", idDoc));
-
-                // Remover de la lista local en memoria
                 listaContactos = listaContactos.filter(c => c.id !== idDoc);
-
-                // Actualizar la vista y contadores
                 poblarFiltroEstados();
                 filtrarYBuscar();
                 actualizarContadorGlobal();
-
                 alert("🗑️ El registro ha sido eliminado correctamente.");
             } catch (error) {
                 console.error("Error al eliminar el registro:", error);
@@ -668,7 +764,6 @@
             }
         };
 
-        // Función global para abrir la ventana flotante de la foto
         window.abrirModalFoto = function(urlFoto) {
             document.getElementById('imgModalAmplia').src = urlFoto;
             const modal = new bootstrap.Modal(document.getElementById('modalFoto'));
@@ -682,7 +777,11 @@
 
             const filtrados = listaContactos.filter(c => {
                 const coincideEstado = !estadoFiltro || c.estado === estadoFiltro;
-                const coincideTexto = c.nombre.toLowerCase().includes(textoBusqueda) || c.telefono.includes(textoBusqueda) || (c.numModulo && c.numModulo.includes(textoBusqueda)) || (c.numDistrito && c.numDistrito.includes(textoBusqueda)) || (c.puesto && c.puesto.toLowerCase().includes(textoBusqueda));
+                const coincideTexto = (c.nombre || '').toLowerCase().includes(textoBusqueda) || 
+                                      (c.telefono || '').includes(textoBusqueda) || 
+                                      (c.numModulo || '').includes(textoBusqueda) || 
+                                      (c.numDistrito || '').includes(textoBusqueda) || 
+                                      (c.puesto || '').toLowerCase().includes(textoBusqueda);
                 
                 let coincideRol = true;
                 if (filtroRol === 'representantes') {
@@ -716,7 +815,7 @@
                 "Nombre Completo": c.nombre,
                 "Estado de Adscripción": c.estado,
                 "Puesto": c.puesto || "N/A",
-                "No. Módulo": c.numModulo || "N/A",
+                "No. Módulo": c.numModulo || c.modulo || "N/A",
                 "No. Distrito": c.numDistrito || "N/A",
                 "Teléfono / WhatsApp": c.telefono,
                 "Es Representante": c.esRepresentante ? "SÍ" : "NO",
@@ -744,7 +843,7 @@
 
             let vcardData = "";
             aExportar.forEach(c => {
-                const telLimpio = c.telefono.replace(/\D/g, '');
+                const telLimpio = c.telefono ? c.telefono.replace(/\D/g, '') : '';
                 const telFormat = telLimpio.length === 10 ? `+52${telLimpio}` : `+${telLimpio}`;
                 const rolStr = c.esRepresentante ? '[REPRESENTANTE] ' : '';
                 const puestoStr = c.puesto ? `[${c.puesto}] ` : '';
@@ -754,7 +853,7 @@
                 vcardData += `FN:MACs 9N - ${puestoStr}${rolStr}${c.nombre} (${c.estado})\n`;
                 vcardData += `N:;${c.nombre};;;\n`;
                 vcardData += `TEL;TYPE=CELL:${telFormat}\n`;
-                vcardData += `NOTE:Puesto: ${c.puesto || 'N/A'} - Mód: ${c.numModulo}, Dist: ${c.numDistrito} - ${c.estado} (Paro 9N)\n`;
+                vcardData += `NOTE:Puesto: ${c.puesto || 'N/A'} - Mód: ${c.numModulo || c.modulo || 'N/A'}, Dist: ${c.numDistrito || 'N/A'} - ${c.estado} (Paro 9N)\n`;
                 vcardData += `END:VCARD\n`;
             });
 
